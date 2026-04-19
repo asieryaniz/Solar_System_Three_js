@@ -12,6 +12,7 @@ export class InteractionSystem {
         this.mouse = new THREE.Vector2()
         
         this.selectedObject = null
+        this.ignoreNextClick = false
         
         this.init()
     }
@@ -21,6 +22,12 @@ export class InteractionSystem {
     }
     
     onClick(event) {
+        // Prevent interaction if the click was on the UI
+        if (this.ignoreNextClick) {
+            this.ignoreNextClick = false
+            return
+        }
+
         // Normalize mouse coordinates (-1 to +1)
         this.mouse.x = (event.clientX / window.innerWidth) * 2 - 1
         this.mouse.y = -(event.clientY / window.innerHeight) * 2 + 1

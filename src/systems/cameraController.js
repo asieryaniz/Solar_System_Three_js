@@ -23,6 +23,7 @@ export class CameraController {
     focusOn(object) {
         this.followTarget = object
         this.isMoving = false
+        this.controls.enabled = false 
     }
 
     clearFocus() {
@@ -36,6 +37,12 @@ export class CameraController {
         this.targetLookAt.copy(this.initialTarget)
       
         this.isMoving = true
+
+        this.controls.enabled = false
+
+        // this.controls.target.copy(this.initialTarget)
+        // this.controls.object.position.copy(this.initialPosition)
+        // this.controls.update()
     }
 
     update() {
@@ -64,6 +71,10 @@ export class CameraController {
         
             if (distance < 0.01) {
                 this.isMoving = false
+                this.controls.enabled = true
+                this.camera.position.copy(this.targetPosition)
+                this.controls.target.copy(this.targetLookAt)
+                this.controls.update()
             }
         }
       }

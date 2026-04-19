@@ -12,12 +12,14 @@ export class Planet {
         distance = 5,
         orbitSpeed = 0.01,
         rotationSpeed = 0.01,
-        texture
+        texture,
+        info
     }) 
     {
         this.name = name
         this.orbitSpeed = orbitSpeed
         this.rotationSpeed = rotationSpeed
+        this.info = info || {}
 
         // Geometry and material
         const geometry = new THREE.SphereGeometry(size, 32, 32)

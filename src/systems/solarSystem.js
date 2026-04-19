@@ -53,6 +53,12 @@ export class SolarSystem {
         }
 
         this.ui.onExit = () => {
+            // Prevent click-through when exiting UI
+            if (this.interaction) {
+                this.interaction.ignoreNextClick = true
+            }
+
+            // Reset camera view
             if (this.cameraController) {
                 this.cameraController.resetView()
             }

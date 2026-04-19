@@ -8,8 +8,8 @@ export class Sun {
     constructor({
         size = 2,
         color = 0xffff00,
-        lightIntensity = 800,
-        lightDistance = 3000
+        lightIntensity = 50,
+        lightDistance = 100
     } = {}) {
 
         // Geometry & material (visible sun)
