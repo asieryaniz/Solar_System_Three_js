@@ -5,6 +5,7 @@ import { Planet } from '../objects/planet.js'
 import { Orbit } from '../objects/orbit.js'
 import { InteractionSystem } from './interactionSystem.js'
 import { PlanetInfoUI } from '../ui/planetInfo.js'
+import { PLANETS } from '../data/planets.js'
 
 export class SolarSystem {
     constructor(scene, camera) {
@@ -25,37 +26,16 @@ export class SolarSystem {
         sun.addToScene(this.scene)
         this.objects.push(sun)
 
-        // Earth
-        const earthOrbit = new Orbit({ radius: 8 })
-        earthOrbit.addToScene(this.scene)
+        // Planets
+        for (const planetData of PLANETS) {
+            const planet = new Planet(planetData)
+            planet.addToScene(this.scene)
+            this.objects.push(planet)
 
-        const earth = new Planet({
-            name: 'Earth',
-            size: 1,
-            color: 0x0000ff,
-            distance: 8,
-            orbitSpeed: 0.01,
-            rotationSpeed: 0.002
-        })
-
-        earth.addToScene(this.scene)
-        this.objects.push(earth)
-
-        // Mars
-        const marsOrbit = new Orbit({ radius: 12 })
-        marsOrbit.addToScene(this.scene)
-
-        const mars = new Planet({
-            name: 'Mars',
-            size: 0.6,
-            color: 0xff0000,
-            distance: 12,
-            orbitSpeed: 0.008,
-            rotationSpeed: 0.008
-        })
-
-        mars.addToScene(this.scene)
-        this.objects.push(mars)
+            // Orbit
+            const orbit = new Orbit({ radius: planetData.distance })
+            orbit.addToScene(this.scene)
+        }
 
         // Interaction system
         this.interaction = new InteractionSystem(

@@ -33,7 +33,7 @@ solarSystem.cameraController = cameraController
 loop.add(solarSystem)
 
 // Add ambient light for basic illumination
-const ambientLight = new THREE.AmbientLight(0xffffff, 5)
+const ambientLight = new THREE.AmbientLight(0xffffff, 3)
 scene.add(ambientLight)
 
 // Start the app

@@ -11,7 +11,8 @@ export class Planet {
         color = 0xffffff,
         distance = 5,
         orbitSpeed = 0.01,
-        rotationSpeed = 0.01
+        rotationSpeed = 0.01,
+        texture
     }) 
     {
         this.name = name
@@ -24,16 +25,9 @@ export class Planet {
         let material
 
         // Use textures for the distinct planets
-        if (name === 'Earth') {
-            material = new THREE.MeshStandardMaterial({
-                map: loadTexture('/textures/earth.jpg')
-            })
-        }
-        else if (name === 'Mars') {
-            material = new THREE.MeshStandardMaterial({
-                map: loadTexture('/textures/mars.jpeg')
-            })
-        }
+        if (texture) {
+            material = new THREE.MeshStandardMaterial({ map: loadTexture(texture) })
+        } 
         else {
             material = new THREE.MeshStandardMaterial({ color })
         }

@@ -8,8 +8,8 @@ export class Sun {
     constructor({
         size = 2,
         color = 0xffff00,
-        lightIntensity = 8,
-        lightDistance = 300
+        lightIntensity = 800,
+        lightDistance = 3000
     } = {}) {
 
         // Geometry & material (visible sun)
@@ -22,7 +22,7 @@ export class Sun {
 
         // Light emitted by the sun
         this.light = new THREE.PointLight(color, lightIntensity, lightDistance)
-        //this.mesh.add(this.light)
+        this.mesh.add(this.light)
         this.light.position.set(0, 0, 0)
     }
 
@@ -32,7 +32,6 @@ export class Sun {
         scene.add(this.light)
     }
 
-    // Optional update (for future effects)
     update() {
         // Slow rotation for visual effect
         this.mesh.rotation.y += 0.002
