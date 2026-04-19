@@ -37,6 +37,25 @@ export class Planet {
         this.mesh = new THREE.Mesh(geometry, material)
         this.mesh.userData.parent = this
 
+        // Saturn ring (only if planet is Saturn)
+        if (this.name === 'Saturn') {
+
+            const ringGeometry = new THREE.RingGeometry(1.8, 3, 64)
+
+            const ringTexture = new THREE.TextureLoader().load('/textures/saturn_ring.png')
+
+            const ringMaterial = new THREE.MeshBasicMaterial({
+                map: ringTexture,
+                side: THREE.DoubleSide,
+                transparent: true,
+                opacity: 1
+            })
+
+            this.ring = new THREE.Mesh(ringGeometry, ringMaterial)
+            this.ring.rotation.x = Math.PI / 2.2
+            this.mesh.add(this.ring)
+        }
+
         // Pivot for orbit
         this.pivot = new THREE.Object3D()
 
