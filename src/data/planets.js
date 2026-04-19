@@ -7,6 +7,8 @@ export const PLANETS = [
       distance: 4,
       orbitSpeed: 0.02,
       rotationSpeed: 0.01,
+      tilt: 0.122, 
+      eccentricity: 0.21,
       texture: '/textures/mercury.png',
       info: {
         radius: '2,439 km',
@@ -19,9 +21,11 @@ export const PLANETS = [
     {
       name: 'Venus',
       size: 0.9,
-      distance: 6,
+      distance: 7,
       orbitSpeed: 0.015,
       rotationSpeed: 0.008,
+      tilt: 0.059, 
+      eccentricity: 0.007,
       texture: '/textures/venus.jpg',
       info: {
         radius: '6,052 km',
@@ -34,9 +38,11 @@ export const PLANETS = [
     {
       name: 'Earth',
       size: 1,
-      distance: 8,
+      distance: 10,
       orbitSpeed: 0.01,
       rotationSpeed: 0.02,
+      tilt: 0.000, 
+      eccentricity: 0.017,
       texture: '/textures/earth.jpg',
       info: {
         radius: '6,371 km',
@@ -49,9 +55,11 @@ export const PLANETS = [
     {
       name: 'Mars',
       size: 0.6,
-      distance: 10,
+      distance: 13,
       orbitSpeed: 0.008,
       rotationSpeed: 0.018,
+      tilt: 0.032, 
+      eccentricity: 0.094,
       texture: '/textures/mars.jpeg',
       info: {
         radius: '3,390 km',
@@ -64,9 +72,11 @@ export const PLANETS = [
     {
       name: 'Jupiter',
       size: 2.5,
-      distance: 14,
+      distance: 18,
       orbitSpeed: 0.004,
       rotationSpeed: 0.04,
+      tilt: 0.022, 
+      eccentricity: 0.049,
       texture: '/textures/jupiter.jpg',
       info: {
         radius: '69,911 km',
@@ -79,9 +89,11 @@ export const PLANETS = [
     {
       name: 'Saturn',
       size: 2.2,
-      distance: 18,
+      distance: 25,
       orbitSpeed: 0.003,
       rotationSpeed: 0.038,
+      tilt: 0.043, 
+      eccentricity: 0.056,
       texture: '/textures/saturn.jpg',
       info: {
         radius: '58,232 km',
@@ -94,9 +106,11 @@ export const PLANETS = [
     {
       name: 'Uranus',
       size: 1.6,
-      distance: 22,
+      distance: 32,
       orbitSpeed: 0.002,
       rotationSpeed: 0.03,
+      tilt: 0.013, 
+      eccentricity: 0.047,
       texture: '/textures/uranus.jpeg',
       info: {
         radius: '25,362 km',
@@ -109,9 +123,11 @@ export const PLANETS = [
     {
       name: 'Neptune',
       size: 1.5,
-      distance: 26,
+      distance: 40,
       orbitSpeed: 0.0015,
       rotationSpeed: 0.028,
+      tilt: 0.030, 
+      eccentricity: 0.009,
       texture: '/textures/neptune.jpeg',
       info: {
         radius: '24,622 km',

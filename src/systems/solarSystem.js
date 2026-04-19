@@ -33,7 +33,11 @@ export class SolarSystem {
             this.objects.push(planet)
 
             // Orbit
-            const orbit = new Orbit({ radius: planetData.distance })
+            const orbit = new Orbit({
+                radius: planetData.distance,
+                tilt: planetData.tilt || 0,
+                eccentricity: planetData.eccentricity || 0
+            })
             orbit.addToScene(this.scene)
         }
 

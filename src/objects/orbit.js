@@ -1,35 +1,47 @@
-// src/objects/Orbit.js
-
 import * as THREE from 'three'
 
 export class Orbit {
     constructor({
-        radius = 5,
-        segments = 100,
-        color = 0xffffff
-  }) {
-    const curve = new THREE.EllipseCurve(
-        0, 0,              // center
-        radius, radius,    // xRadius, yRadius
-        0, 2 * Math.PI     // full circle
-    )
+      radius = 5,
+      segments = 128,
+      color = 0xffffff,
+      tilt = 0,
+      eccentricity = 0
+    }) {
 
-    const points = curve.getPoints(segments)
-    const geometry = new THREE.BufferGeometry().setFromPoints(points)
+      this.radius = radius
+      this.eccentricity = eccentricity
 
-    const material = new THREE.LineBasicMaterial({
+      const points = []
+
+      for (let i = 0; i <= segments; i++) {
+
+        const angle = (i / segments) * Math.PI * 2
+
+        const a = radius * (1 + eccentricity)
+        const b = radius * (1 - eccentricity)
+
+        const x = Math.cos(angle) * a
+        const z = Math.sin(angle) * b
+
+        points.push(new THREE.Vector3(x, 0, z))
+      }
+
+      const geometry = new THREE.BufferGeometry().setFromPoints(points)
+
+      const material = new THREE.LineBasicMaterial({
         color,
         transparent: true,
-        opacity: 0.5
-    })
+        opacity: 0.25
+      })
 
-    this.line = new THREE.LineLoop(geometry, material)
+      this.line = new THREE.LineLoop(geometry, material)
 
-    // Rotate to lie flat (XZ plane)
-    this.line.rotation.x = Math.PI / 2
-  }
+      this.line.rotation.set(0, 0, 0)
+      this.line.rotation.z = tilt
+    }
 
-  addToScene(scene) {
-    scene.add(this.line)
-  }
+    addToScene(scene) {
+      scene.add(this.line)
+    }
 }

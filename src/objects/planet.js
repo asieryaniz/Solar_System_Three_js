@@ -20,6 +20,8 @@ export class Planet {
         this.orbitSpeed = orbitSpeed
         this.rotationSpeed = rotationSpeed
         this.info = info || {}
+        this.distance = distance
+        
 
         // Geometry and material
         const geometry = new THREE.SphereGeometry(size, 32, 32)
@@ -60,7 +62,7 @@ export class Planet {
         this.pivot = new THREE.Object3D()
 
         // Position planet away from center
-        this.mesh.position.x = distance
+        // this.mesh.position.x = distance
 
         // Build hierarchy
         this.pivot.add(this.mesh)
@@ -74,7 +76,7 @@ export class Planet {
         })
 
         this.hitbox = new THREE.Mesh(hitGeometry, hitMaterial)
-        this.hitbox.position.x = distance
+        // this.hitbox.position.x = distance
 
         this.pivot.add(this.hitbox)
 
@@ -88,8 +90,16 @@ export class Planet {
 
     // Update method (used by loop system)
     update() {
-        // Orbit around center
-        this.pivot.rotation.y += this.orbitSpeed
+        // Orbit
+        this.angle = (this.angle || 0) + this.orbitSpeed
+
+        const a = this.distance * (1 + (this.eccentricity || 0))
+        const b = this.distance * (1 - (this.eccentricity || 0))
+
+        const x = Math.cos(this.angle) * a
+        const z = Math.sin(this.angle) * b
+
+        this.pivot.position.set(x, 0, z)
 
         // Self rotation
         this.mesh.rotation.y += this.rotationSpeed
