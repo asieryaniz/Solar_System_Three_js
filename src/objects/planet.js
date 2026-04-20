@@ -13,7 +13,9 @@ export class Planet {
         orbitSpeed = 0.01,
         rotationSpeed = 0.01,
         texture,
-        info
+        info,
+        tilt,
+        eccentricity
     }) 
     {
         this.name = name
@@ -21,6 +23,9 @@ export class Planet {
         this.rotationSpeed = rotationSpeed
         this.info = info || {}
         this.distance = distance
+        this.tilt = tilt || 0
+        this.eccentricity = eccentricity || 0
+        this.orbitPosition = new THREE.Vector3()
         
 
         // Geometry and material
@@ -99,7 +104,14 @@ export class Planet {
         const x = Math.cos(this.angle) * a
         const z = Math.sin(this.angle) * b
 
-        this.pivot.position.set(x, 0, z)
+        this.orbitPosition.set(x, 0, z)
+
+        this.orbitPosition.applyAxisAngle(
+            new THREE.Vector3(0, 0, 1),
+            this.tilt
+        )
+
+        this.pivot.position.copy(this.orbitPosition)
 
         // Self rotation
         this.mesh.rotation.y += this.rotationSpeed

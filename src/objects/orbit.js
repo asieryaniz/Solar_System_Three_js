@@ -37,7 +37,6 @@ export class Orbit {
 
       this.line = new THREE.LineLoop(geometry, material)
 
-      this.line.rotation.set(0, 0, 0)
       this.line.rotation.z = tilt
     }
 
