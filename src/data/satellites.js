@@ -1,3 +1,5 @@
+// src/data/satellites.js
+
 export const SATELLITES = {
 
     Earth: [

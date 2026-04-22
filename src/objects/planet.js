@@ -3,6 +3,7 @@
 import * as THREE from 'three'
 
 import { loadTexture } from '../utils/textureLoader.js'
+import { SimulationSettings } from '../systems/simulationSettings.js'
 
 export class Planet {
     constructor({
@@ -95,6 +96,8 @@ export class Planet {
 
     // Update method (used by loop system)
     update() {
+        if (SimulationSettings.pause) return
+        
         // Orbit
         this.angle = (this.angle || 0) + this.orbitSpeed
 

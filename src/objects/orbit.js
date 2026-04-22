@@ -1,4 +1,8 @@
+// src/objects/orbit.js
+
 import * as THREE from 'three'
+
+import { SimulationSettings } from '../systems/simulationSettings.js'
 
 export class Orbit {
     constructor({
@@ -11,6 +15,7 @@ export class Orbit {
 
       this.radius = radius
       this.eccentricity = eccentricity
+      this.isMoonOrbit = false
 
       const points = []
 
@@ -36,11 +41,24 @@ export class Orbit {
       })
 
       this.line = new THREE.LineLoop(geometry, material)
-
       this.line.rotation.z = tilt
+      this.line.visible = true
+
+    }
+
+    addToObject(object) {
+      object.add(this.line)
     }
 
     addToScene(scene) {
       scene.add(this.line)
     }
+
+    update() {
+      if (this.isMoonOrbit) {
+          this.line.visible = SimulationSettings.showMoonOrbits
+      } else {
+          this.line.visible = SimulationSettings.showPlanetOrbits
+      }
+  }
 }

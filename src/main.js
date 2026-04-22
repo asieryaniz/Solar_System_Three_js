@@ -10,12 +10,16 @@ import { createLoop } from './core/loop.js'
 import { createControls } from './controls/controls.js'
 import { SolarSystem } from './systems/solarSystem.js'
 import { CameraController } from './systems/cameraController.js'
+import { ControlsPanel } from './ui/controlsPanel.js'
 
 const scene = createScene()
 const camera = createCamera()
 const renderer = createRenderer()
 
 const loop = createLoop(renderer, scene, camera)
+
+// Add UI controls panel
+const controlsPanel = new ControlsPanel()
 
 // Camera controls
 const controls = createControls(camera, renderer)

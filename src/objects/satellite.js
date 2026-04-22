@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { loadTexture } from '../utils/textureLoader.js'
+import { SimulationSettings } from '../systems/simulationSettings.js'
 
 export class Satellite {
     constructor({
@@ -44,6 +45,15 @@ export class Satellite {
     }
 
     update() {
+        if (!SimulationSettings.showMoons) {
+            this.mesh.visible = false
+            return
+        }
+    
+        this.mesh.visible = true
+    
+        if (SimulationSettings.pause) return
+        
         this.angle += this.orbitSpeed
     
         const a = this.distance * (1 + this.eccentricity)

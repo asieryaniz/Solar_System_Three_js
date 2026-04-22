@@ -3,6 +3,7 @@
 import * as THREE from 'three'
 
 import { loadTexture } from '../utils/textureLoader.js'
+import { SimulationSettings } from '../systems/simulationSettings.js'
 
 export class Sun {
     constructor({
@@ -33,6 +34,8 @@ export class Sun {
     }
 
     update() {
+        if (SimulationSettings.pause) return
+        
         // Slow rotation for visual effect
         this.mesh.rotation.y += 0.002
     }

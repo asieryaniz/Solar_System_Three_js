@@ -19,6 +19,8 @@ export class SolarSystem {
   
     init(camera) {
 
+        this.orbits = []
+
         // Sun
         const sun = new Sun({
             size: 2,
@@ -42,18 +44,32 @@ export class SolarSystem {
                     const satellite = new Satellite(satData)
 
                     satellite.addToPlanet(planet)
-
                     this.objects.push(satellite)
+                    
+                    // Moon orbit
+                    const orbit = new Orbit({
+                        radius: satData.distance,
+                        tilt: satData.tilt || 0,
+                        eccentricity: satData.eccentricity || 0,
+                        color: 0xaaaaaa
+                    })
+                    orbit.isMoonOrbit = true 
+                    
+                    orbit.addToObject(planet.pivot)
+                    this.orbits.push(orbit)
                 }
             }
 
-            // Orbit
+            // Planet orbit
             const orbit = new Orbit({
                 radius: planetData.distance,
                 tilt: planetData.tilt || 0,
                 eccentricity: planetData.eccentricity || 0
             })
+            orbit.isMoonOrbit = false
+            
             orbit.addToScene(this.scene)
+            this.orbits.push(orbit)
         }
 
         // Interaction system
@@ -88,10 +104,17 @@ export class SolarSystem {
 
     // Called by loop
     update() {
+        // Update all objects in the solar system
         for (const obj of this.objects) {
             if (obj.update) obj.update()
         }
+
+        // Update orbits separately to ensure they are drawn correctly
+        for (const orbit of this.orbits) {
+            if (orbit.update) orbit.update()
+        }
       
+        // Update interaction system
         if (this.interaction) {
             this.interaction.update()
         }
