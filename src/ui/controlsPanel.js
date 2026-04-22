@@ -25,6 +25,16 @@ export class ControlsPanel {
             <h3 style="margin-top:0;">Controls</h3>
 
             <label>
+                <input type="checkbox" id="toggle-moons" checked />
+                Moons
+            </label><br/>
+
+            <label>
+                <input type="checkbox" id="toggle-satellites" checked />
+                Artificial Satellites
+            </label><br/>
+
+            <label>
                 <input type="checkbox" id="toggle-planet-orbits" checked />
                 Planet Orbits
             </label><br/>
@@ -32,11 +42,6 @@ export class ControlsPanel {
             <label>
                 <input type="checkbox" id="toggle-moon-orbits" checked />
                 Moon Orbits
-            </label><br/>
-
-            <label>
-                <input type="checkbox" id="toggle-moons" checked />
-                Moons
             </label><br/>
 
             <label>
@@ -65,6 +70,10 @@ export class ControlsPanel {
 
         document.getElementById('toggle-pause').onchange = (e) => {
             SimulationSettings.pause = e.target.checked
+        }
+
+        document.getElementById('toggle-satellites').onchange = (e) => {
+            SimulationSettings.showSatellites = e.target.checked
         }
     }
 }

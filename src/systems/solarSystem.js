@@ -8,6 +8,8 @@ import { PlanetInfoUI } from '../ui/planetInfo.js'
 import { PLANETS } from '../data/planets.js'
 import { Satellite } from '../objects/satellite.js'
 import { SATELLITES } from '../data/satellites.js'
+import { ArtificialSatellite } from '../objects/artificialSatellite.js'
+import { ARTIFICIAL_SATELLITES } from '../data/artificialSatellites.js'
 
 export class SolarSystem {
     constructor(scene, camera) {
@@ -36,7 +38,7 @@ export class SolarSystem {
             planet.addToScene(this.scene)
             this.objects.push(planet)
 
-            // Add Moons
+            // Add Moons (natural satellites)
             const satellites = SATELLITES[planet.name]
 
             if (satellites) {
@@ -60,6 +62,18 @@ export class SolarSystem {
                 }
             }
 
+            // Add Artificial Satellites
+            const artificials = ARTIFICIAL_SATELLITES[planet.name]
+
+            if (artificials) {
+                for (const satData of artificials) {
+                    const sat = new ArtificialSatellite(satData)
+
+                    sat.addToPlanet(planet)
+                    this.objects.push(sat)
+                }
+            }
+
             // Planet orbit
             const orbit = new Orbit({
                 radius: planetData.distance,
@@ -67,7 +81,7 @@ export class SolarSystem {
                 eccentricity: planetData.eccentricity || 0
             })
             orbit.isMoonOrbit = false
-            
+
             orbit.addToScene(this.scene)
             this.orbits.push(orbit)
         }
