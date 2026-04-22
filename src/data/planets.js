@@ -38,7 +38,7 @@ export const PLANETS = [
     {
       name: 'Earth',
       size: 1,
-      distance: 10,
+      distance: 12,
       orbitSpeed: 0.01,
       rotationSpeed: 0.02,
       tilt: 0.000, 
@@ -55,7 +55,7 @@ export const PLANETS = [
     {
       name: 'Mars',
       size: 0.6,
-      distance: 13,
+      distance: 18,
       orbitSpeed: 0.008,
       rotationSpeed: 0.018,
       tilt: 0.032, 
@@ -72,7 +72,7 @@ export const PLANETS = [
     {
       name: 'Jupiter',
       size: 2.5,
-      distance: 18,
+      distance: 25,
       orbitSpeed: 0.004,
       rotationSpeed: 0.04,
       tilt: 0.022, 
@@ -89,7 +89,7 @@ export const PLANETS = [
     {
       name: 'Saturn',
       size: 2.2,
-      distance: 25,
+      distance: 32,
       orbitSpeed: 0.003,
       rotationSpeed: 0.038,
       tilt: 0.043, 
@@ -106,7 +106,7 @@ export const PLANETS = [
     {
       name: 'Uranus',
       size: 1.6,
-      distance: 32,
+      distance: 40,
       orbitSpeed: 0.002,
       rotationSpeed: 0.03,
       tilt: 0.013, 
@@ -123,7 +123,7 @@ export const PLANETS = [
     {
       name: 'Neptune',
       size: 1.5,
-      distance: 40,
+      distance: 48,
       orbitSpeed: 0.0015,
       rotationSpeed: 0.028,
       tilt: 0.030, 

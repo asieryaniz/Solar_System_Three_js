@@ -6,6 +6,8 @@ import { Orbit } from '../objects/orbit.js'
 import { InteractionSystem } from './interactionSystem.js'
 import { PlanetInfoUI } from '../ui/planetInfo.js'
 import { PLANETS } from '../data/planets.js'
+import { Satellite } from '../objects/satellite.js'
+import { SATELLITES } from '../data/satellites.js'
 
 export class SolarSystem {
     constructor(scene, camera) {
@@ -31,6 +33,19 @@ export class SolarSystem {
             const planet = new Planet(planetData)
             planet.addToScene(this.scene)
             this.objects.push(planet)
+
+            // Add Moons
+            const satellites = SATELLITES[planet.name]
+
+            if (satellites) {
+                for (const satData of satellites) {
+                    const satellite = new Satellite(satData)
+
+                    satellite.addToPlanet(planet)
+
+                    this.objects.push(satellite)
+                }
+            }
 
             // Orbit
             const orbit = new Orbit({
