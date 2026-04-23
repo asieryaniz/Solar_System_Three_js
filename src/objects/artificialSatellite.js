@@ -77,18 +77,28 @@ export class ArtificialSatellite {
 
         if (SimulationSettings.pause) return
 
-        this.angle += this.orbitSpeed
+        this.angle += this.orbitSpeed * SimulationSettings.timeScale
 
         // Scape orbit (Voyager)
         if (this.type === 'escape') {
 
-            this.escapeDistance += this.escapeSpeed
-            this.escapeAngle += this.escapeCurve
+            this.escapeDistance += this.escapeSpeed * SimulationSettings.timeScale
+            this.escapeAngle += this.escapeCurve * SimulationSettings.timeScale
+
+            const dir = new THREE.Vector3(1, 0, 0)
+            
+            const drift = new THREE.Vector3(
+                Math.cos(this.escapeAngle) * 0.3,
+                0,
+                Math.sin(this.escapeAngle) * 0.3
+            )
         
-            const x = Math.cos(this.escapeAngle) * this.escapeDistance
-            const z = Math.sin(this.escapeAngle) * this.escapeDistance
+            const finalPos = dir
+                .clone()
+                .multiplyScalar(this.escapeDistance)
+                .add(drift)
         
-            this.pivot.position.set(x, 0, z)
+            this.pivot.position.copy(finalPos)
         
             return
         }

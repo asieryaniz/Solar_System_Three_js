@@ -48,6 +48,23 @@ export class ControlsPanel {
                 <input type="checkbox" id="toggle-pause" />
                 Pause Simulation
             </label>
+
+            <br/><br/>
+
+            <label>
+                Simulation Speed
+            </label><br/>
+
+            <input 
+                type="range" 
+                id="time-scale" 
+                min="0" 
+                max="5" 
+                step="0.1" 
+                value="1"
+            />
+
+            <span id="time-scale-value">1x</span>
         `
 
         document.body.appendChild(this.panel)
@@ -74,6 +91,15 @@ export class ControlsPanel {
 
         document.getElementById('toggle-satellites').onchange = (e) => {
             SimulationSettings.showSatellites = e.target.checked
+        }
+
+        const slider = document.getElementById('time-scale')
+        const valueLabel = document.getElementById('time-scale-value')
+
+        slider.oninput = (e) => {
+            const value = parseFloat(e.target.value)
+            SimulationSettings.timeScale = value
+            valueLabel.innerText = value.toFixed(1) + 'x'
         }
     }
 }

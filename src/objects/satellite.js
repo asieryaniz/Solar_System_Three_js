@@ -54,7 +54,7 @@ export class Satellite {
     
         if (SimulationSettings.pause) return
         
-        this.angle += this.orbitSpeed
+        this.angle += this.orbitSpeed * SimulationSettings.timeScale
     
         const a = this.distance * (1 + this.eccentricity)
         const b = this.distance * (1 - this.eccentricity)

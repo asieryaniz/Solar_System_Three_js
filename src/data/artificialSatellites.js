@@ -24,7 +24,7 @@ export const ARTIFICIAL_SATELLITES = {
             name: 'Voyager 1',
             model: '/models/voyager.glb',
             type: 'escape',
-            size: 0.05,
+            size: 0.1,
             distance: 65,
             orbitSpeed: 0.0003
         },

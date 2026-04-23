@@ -4,9 +4,7 @@ export const SimulationSettings = {
     showPlanetOrbits: true,
     showMoonOrbits: true,
     showMoons: true,
-
-    // TODO
     showSatellites: true,
-    realisticScale: false,
-    pause: false
+    pause: false,
+    timeScale: 1
 }

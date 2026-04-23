@@ -99,7 +99,7 @@ export class Planet {
         if (SimulationSettings.pause) return
         
         // Orbit
-        this.angle = (this.angle || 0) + this.orbitSpeed
+        this.angle = (this.angle || 0) + this.orbitSpeed * SimulationSettings.timeScale
 
         const a = this.distance * (1 + (this.eccentricity || 0))
         const b = this.distance * (1 - (this.eccentricity || 0))
