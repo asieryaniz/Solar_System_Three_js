@@ -13,17 +13,25 @@ export class ArtificialSatellite {
         distance = 2,
         orbitSpeed = 0.05,
         inclination = 0,
-        
+        eccentricity = 0,
+        type = 'orbit'
     }) {
         this.name = name
         this.distance = distance
         this.orbitSpeed = orbitSpeed
         this.inclination = inclination
+        this.eccentricity = eccentricity
         this.size = size
         this.model = model
-
         this.angle = 0
         this.loaded = false
+        this.type = type || 'orbit'
+        this.direction = new THREE.Vector3(1, 0.1, 0.2)
+        this.parentPlanet = null
+        this.escapeDistance = distance
+        this.escapeAngle = Math.random() * Math.PI * 2
+        this.escapeSpeed = 0.002
+        this.escapeCurve = 0.0005
 
         // Orbital pivot with inclination
         this.pivot = new THREE.Object3D()
@@ -54,6 +62,7 @@ export class ArtificialSatellite {
     }
 
     addToPlanet(planet) {
+        this.parentPlanet = planet
         planet.pivot.add(this.pivot)
     }
 
@@ -70,10 +79,56 @@ export class ArtificialSatellite {
 
         this.angle += this.orbitSpeed
 
-        const x = Math.cos(this.angle) * this.distance
-        const z = Math.sin(this.angle) * this.distance
+        // Scape orbit (Voyager)
+        if (this.type === 'escape') {
 
-        this.pivot.position.set(x, 0, z)
+            this.escapeDistance += this.escapeSpeed
+            this.escapeAngle += this.escapeCurve
+        
+            const x = Math.cos(this.escapeAngle) * this.escapeDistance
+            const z = Math.sin(this.escapeAngle) * this.escapeDistance
+        
+            this.pivot.position.set(x, 0, z)
+        
+            return
+        }
+
+        // Solar orbit (Parker)
+        if (this.type === 'solarOrbit') {
+
+            const a = this.distance * (1 + this.eccentricity)
+            const b = this.distance * (1 - this.eccentricity)
+
+            const x = Math.cos(this.angle) * a
+            const z = Math.sin(this.angle) * b
+
+            this.pivot.position.set(x, 0, z)
+            return
+        }
+
+        // Lagrange (James Webb)
+        if (this.type === 'lagrange') {
+
+            const earthPos = this.parentPlanet.pivot.position
+
+            const offset = new THREE.Vector3(
+                Math.cos(this.angle) * this.distance,
+                0,
+                Math.sin(this.angle) * this.distance
+            )
+
+            this.pivot.position.copy(earthPos).add(offset)
+            return
+        }
+
+        // Normal orbit
+        if (this.type === 'orbit') {
+            
+            const x = Math.cos(this.angle) * this.distance
+            const z = Math.sin(this.angle) * this.distance
+
+            this.pivot.position.set(x, 0, z)
+        }
 
     }
 }

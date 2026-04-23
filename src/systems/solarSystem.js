@@ -69,7 +69,13 @@ export class SolarSystem {
                 for (const satData of artificials) {
                     const sat = new ArtificialSatellite(satData)
 
-                    sat.addToPlanet(planet)
+                    if (satData.type === 'orbit' || satData.type === 'lagrange') {
+                        sat.addToPlanet(planet)
+                    } 
+                    else {
+                        this.scene.add(sat.pivot)
+                    }
+
                     this.objects.push(sat)
                 }
             }
