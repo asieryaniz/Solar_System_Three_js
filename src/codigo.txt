@@ -1,0 +1,1688 @@
+===== controls/controls.js =====
+// src/controls/controls.js
+
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
+
+export function createControls(camera, renderer) {
+    const controls = new OrbitControls(camera, renderer.domElement)
+
+    // Limit zoom distance
+    controls.minDistance = 5
+    controls.maxDistance = 100
+
+    // Smooth movement
+    controls.enableDamping = true
+    controls.dampingFactor = 0.05
+
+    // Zoom settings
+    controls.enableZoom = true
+
+    // Limit vertical rotation
+    controls.maxPolarAngle = Math.PI
+
+    return controls
+}===== core/camera.js =====
+// src/core/camera.js
+
+import * as THREE from 'three'
+
+export function createCamera() {
+    const camera = new THREE.PerspectiveCamera(
+        75, // field of view
+        window.innerWidth / window.innerHeight, // aspect ratio
+        0.1, // near clipping plane
+        1000 // far clipping plane
+    )
+
+    // Initial position
+    camera.position.set(0, 10, 40)
+
+    return camera
+}===== core/loop.js =====
+// src/core/loop.js
+
+export function createLoop(renderer, scene, camera) {
+    const updatables = []
+  
+    function add(object) {
+        updatables.push(object)
+    }
+  
+    function start() {
+        renderer.setAnimationLoop(() => {
+            // Update all registered objects
+            for (const obj of updatables) {
+                if (obj.update) {
+                    obj.update()
+                }
+            }
+  
+            renderer.render(scene, camera)
+        })
+    }
+  
+    return { start, add }
+}===== core/renderer.js =====
+// src/core/renderer.js
+
+import * as THREE from 'three'
+
+export function createRenderer() {
+  const renderer = new THREE.WebGLRenderer({ antialias: true })
+  renderer.setSize(window.innerWidth, window.innerHeight)
+
+  // Better visuals
+  renderer.setPixelRatio(window.devicePixelRatio)
+
+  document.body.appendChild(renderer.domElement)
+
+  return renderer
+}===== core/scene.js =====
+// src/core/scene.js
+
+import * as THREE from 'three'
+
+export function createScene() {
+    const scene = new THREE.Scene()
+
+    const loader = new THREE.CubeTextureLoader()
+
+    // Load space background textures (6 images for the cube)
+    const spaceTexture = loader.load([
+        '/textures/space/1.jpg',
+        '/textures/space/2.jpg',
+        '/textures/space/3.jpg',
+        '/textures/space/4.jpg',
+        '/textures/space/5.jpg',
+        '/textures/space/6.jpg'
+    ])
+
+    scene.background = spaceTexture
+
+    return scene
+}===== data/artificialSatellites.js =====
+// src/data/artificialSatellites.js
+
+export const ARTIFICIAL_SATELLITES = {
+    Earth: [
+        {
+            name: 'ISS',
+            model: '/models/iss.glb',
+            type: 'orbit',
+            size: 0.01,
+            distance: 2.2,
+            orbitSpeed: 0.05,
+            inclination: 0.51
+        },
+        {
+            name: 'Hubble',
+            model: '/models/hubble.glb',
+            type: 'orbit',
+            size: 0.001,
+            distance: 2.4,
+            orbitSpeed: 0.04,
+            inclination: 0.49
+        },
+        {
+            name: 'Voyager 1',
+            model: '/models/voyager.glb',
+            type: 'escape',
+            size: 0.1,
+            distance: 65,
+            orbitSpeed: 0.0003
+        },
+        {
+            name: 'Parker Solar Probe',
+            model: '/models/parker.glb',
+            type: 'solarOrbit',
+            size: 0.1,
+            distance: 3.5,
+            orbitSpeed: 0.02,
+            inclination: 0.3,
+            eccentricity: 0.3, 
+        },
+        {
+            name: 'James Webb',
+            model: '/models/james_web.glb',
+            type: 'lagrange',
+            size: 0.02,
+            distance: 7,
+            orbitSpeed: 0.01
+        }
+    ]
+}===== data/planets.js =====
+// src/data/planets.js
+
+export const PLANETS = [
+    {
+      name: 'Mercury',
+      size: 0.4,
+      distance: 5,
+      orbitSpeed: 0.02,
+      rotationSpeed: 0.01,
+      tilt: 0.122, 
+      eccentricity: 0.21,
+      texture: '/textures/mercury.png',
+      info: {
+        radius: '2,439 km',
+        day: '58.6 Earth days',
+        year: '88 days',
+        moons: 0,
+        description: 'The smallest planet and closest to the Sun, with extreme temperature variations.'
+      }
+    },
+    {
+      name: 'Venus',
+      size: 0.9,
+      distance: 8,
+      orbitSpeed: 0.015,
+      rotationSpeed: 0.008,
+      tilt: 0.059, 
+      eccentricity: 0.007,
+      texture: '/textures/venus.jpg',
+      info: {
+        radius: '6,052 km',
+        day: '243 Earth days',
+        year: '225 days',
+        moons: 0,
+        description: 'A toxic planet with a thick atmosphere and the hottest surface in the solar system.'
+      }
+    },
+    {
+      name: 'Earth',
+      size: 1,
+      distance: 13,
+      orbitSpeed: 0.01,
+      rotationSpeed: 0.02,
+      tilt: 0.000, 
+      eccentricity: 0.017,
+      texture: '/textures/earth.jpg',
+      info: {
+        radius: '6,371 km',
+        day: '24 hours',
+        year: '365 days',
+        moons: 1,
+        description: 'Our home planet, the only known world with life.'
+      }
+    },
+    {
+      name: 'Mars',
+      size: 0.6,
+      distance: 19,
+      orbitSpeed: 0.008,
+      rotationSpeed: 0.018,
+      tilt: 0.032, 
+      eccentricity: 0.094,
+      texture: '/textures/mars.jpeg',
+      info: {
+        radius: '3,390 km',
+        day: '24.6 hours',
+        year: '687 days',
+        moons: 2,
+        description: 'Known as the Red Planet, Mars has the largest volcano in the solar system.'
+      }
+    },
+    {
+      name: 'Jupiter',
+      size: 2.5,
+      distance: 28,
+      orbitSpeed: 0.004,
+      rotationSpeed: 0.04,
+      tilt: 0.022, 
+      eccentricity: 0.049,
+      texture: '/textures/jupiter.jpg',
+      info: {
+        radius: '69,911 km',
+        day: '10 hours',
+        year: '12 years',
+        moons: 95,
+        description: 'The largest planet, a gas giant with a famous Great Red Spot storm.'
+      }
+    },
+    {
+      name: 'Saturn',
+      size: 2.2,
+      distance: 38,
+      orbitSpeed: 0.003,
+      rotationSpeed: 0.038,
+      tilt: 0.043, 
+      eccentricity: 0.056,
+      texture: '/textures/saturn.jpg',
+      info: {
+        radius: '58,232 km',
+        day: '10.7 hours',
+        year: '29 years',
+        moons: 146,
+        description: 'A gas giant famous for its spectacular ring system.'
+      }
+    },
+    {
+      name: 'Uranus',
+      size: 1.6,
+      distance: 48,
+      orbitSpeed: 0.002,
+      rotationSpeed: 0.03,
+      tilt: 0.013, 
+      eccentricity: 0.047,
+      texture: '/textures/uranus.jpeg',
+      info: {
+        radius: '25,362 km',
+        day: '17 hours',
+        year: '84 years',
+        moons: 27,
+        description: 'An ice giant that rotates on its side, making it unique among planets.'
+      }
+    },
+    {
+      name: 'Neptune',
+      size: 1.5,
+      distance: 60,
+      orbitSpeed: 0.0015,
+      rotationSpeed: 0.028,
+      tilt: 0.030, 
+      eccentricity: 0.009,
+      texture: '/textures/neptune.jpeg',
+      info: {
+        radius: '24,622 km',
+        day: '16 hours',
+        year: '165 years',
+        moons: 14,
+        description: 'The farthest planet, known for its deep blue color and strong winds.'
+      }
+    }
+]===== data/satellites.js =====
+// src/data/satellites.js
+
+export const SATELLITES = {
+
+    Earth: [
+      {
+        name: 'Moon',
+        size: 0.27,
+        distance: 3.5,
+        orbitSpeed: 0.03,
+        rotationSpeed: 0.01,
+        texture: '/textures/moons/earth_moon.jpg',
+        tilt: 0.089,
+        eccentricity: 0.055,
+        tidalLock: true
+      }
+    ],
+  
+    Mars: [
+      {
+        name: 'Phobos',
+        size: 0.08,
+        distance: 1.8,
+        orbitSpeed: 0.06,
+        rotationSpeed: 0.01,
+        texture: '/textures/moons/phobos.jpg',
+        tilt: 0.01,
+        eccentricity: 0.015,
+        tidalLock: true
+      },
+      {
+        name: 'Deimos',
+        size: 0.05,
+        distance: 2.8,
+        orbitSpeed: 0.035,
+        rotationSpeed: 0.01,
+        texture: '/textures/moons/deimos.jpg',
+        tilt: 0.02,
+        eccentricity: 0.0005,
+        tidalLock: true
+      }
+    ],
+  
+    Jupiter: [
+      {
+        name: 'Io',
+        size: 0.2,
+        distance: 2.8,
+        orbitSpeed: 0.07,
+        texture: '/textures/moons/io.jpg',
+        tilt: 0.01,
+        eccentricity: 0.004,
+        tidalLock: true
+      },
+      {
+        name: 'Europa',
+        size: 0.18,
+        distance: 3.2,
+        orbitSpeed: 0.055,
+        texture: '/textures/moons/europa.jpg',
+        tilt: 0.008,
+        eccentricity: 0.009,
+        tidalLock: true
+      },
+      {
+        name: 'Ganymede',
+        size: 0.25,
+        distance: 4.8,
+        orbitSpeed: 0.045,
+        texture: '/textures/moons/ganymede.jpg',
+        tilt: 0.003,
+        eccentricity: 0.001,
+        tidalLock: true
+      },
+      {
+        name: 'Callisto',
+        size: 0.22,
+        distance: 6.5,
+        orbitSpeed: 0.035,
+        texture: '/textures/moons/callisto.jpg',
+        tilt: 0.005,
+        eccentricity: 0.007,
+        tidalLock: true
+      }
+    ],
+  
+    Saturn: [
+      {
+        name: 'Titan',
+        size: 0.23,
+        distance: 5,
+        orbitSpeed: 0.045,
+        texture: '/textures/moons/titan.png',
+        tilt: 0.02,
+        eccentricity: 0.028,
+        tidalLock: true
+      }
+    ],
+  
+    Uranus: [
+      {
+        name: 'Titania',
+        size: 0.15,
+        distance: 3.5,
+        orbitSpeed: 0.035,
+        texture: '/textures/moons/titania.jpg',
+        tilt: 0.05,
+        eccentricity: 0.002,
+        tidalLock: true
+      }
+    ],
+  
+    Neptune: [
+      {
+        name: 'Triton',
+        size: 0.18,
+        distance: 3.5,
+        orbitSpeed: 0.04,
+        texture: '/textures/moons/triton.jpg',
+        tilt: 0.27,
+        eccentricity: 0.00002,
+        tidalLock: true
+      }
+    ]
+  }===== main.js =====
+// src/main.js
+
+import * as THREE from 'three'
+
+import { createScene } from './core/scene.js'
+import { createCamera } from './core/camera.js'
+import { createRenderer } from './core/renderer.js'
+import { createLoop } from './core/loop.js'
+
+import { createControls } from './controls/controls.js'
+import { SolarSystem } from './systems/solarSystem.js'
+import { CameraController } from './systems/cameraController.js'
+import { ControlsPanel } from './ui/controlsPanel.js'
+
+import { MissionSystem } from './systems/missionSystem.js'
+import { ArtemisII } from './missions/artemisII.js'
+
+const scene = createScene()
+const camera = createCamera()
+const renderer = createRenderer()
+
+const loop = createLoop(renderer, scene, camera)
+
+// Add UI controls panel
+const controlsPanel = new ControlsPanel()
+
+// Camera controls
+const controls = createControls(camera, renderer)
+loop.add({
+  update: () => controls.update()
+})
+
+// Zoom to the planet
+const cameraController = new CameraController(camera, controls)
+loop.add(cameraController)
+
+// Solar System
+const solarSystem = new SolarSystem(scene, camera)
+solarSystem.cameraController = cameraController
+loop.add(solarSystem)
+
+// Add ambient light for basic illumination
+const ambientLight = new THREE.AmbientLight(0xffffff, 3)
+scene.add(ambientLight)
+
+// Mission system
+const missionSystem = new MissionSystem(scene, camera)
+loop.add(missionSystem)
+
+const artemis = new ArtemisII(solarSystem)
+
+document.getElementById('start-artemis').onclick = () => {
+    missionSystem.start(artemis)
+}
+
+document.getElementById('stop-mission').onclick = () => {
+    missionSystem.stop()
+}
+
+// Start the app
+loop.start()===== missions/artemisII.js =====
+import * as THREE from 'three'
+import { SimulationSettings } from '../systems/simulationSettings.js'
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js'
+
+export class ArtemisII {
+
+    constructor(solarSystem) {
+        this.solarSystem = solarSystem
+    }
+
+    start(scene, camera) {
+        this.scene = scene
+        this.camera = camera
+        this.time = 0
+        SimulationSettings.missionMode = true
+        SimulationSettings.timeScale = 0.05
+        this.earth = this.solarSystem.objects.find(
+            obj => obj.name === 'Earth'
+        )
+
+        // Parameters for the mission phases
+        this.phase = 'launch'
+        this.velocity = 0
+        this.acceleration = 0.00025
+        this.maxVelocity = 0.002
+
+        // Load the Artemis II model
+        const loader = new GLTFLoader()
+        const draco = new DRACOLoader()
+        draco.setDecoderPath('/draco/')
+        loader.setDRACOLoader(draco)
+
+        this.ship = new THREE.Object3D()
+
+        loader.load('/models/artemis.glb', (gltf) => {
+
+            this.model = gltf.scene
+
+            this.model.scale.set(0.02, 0.02, 0.02)
+
+            // Orientación vertical (muy importante)
+            this.model.rotation.x = Math.PI / 2
+
+            this.ship.add(this.model)
+        })
+
+        // Initial position just above Earth
+        this.ship.position.set(0, 1.2, 0)
+
+        // Add fire effect
+        const textureLoader = new THREE.TextureLoader()
+
+        this.fireTexture = textureLoader.load('/textures/fire.jpg')
+
+        const fireMaterial = new THREE.SpriteMaterial({
+            map: this.fireTexture,
+            transparent: true,
+            depthWrite: false
+        })
+
+        this.fire = new THREE.Sprite(fireMaterial)
+
+        // Scale to make it look like a flame
+        this.fire.scale.set(0.5, 1.5, 1)
+
+        // Position it at the base of the rocket
+        this.fire.position.set(0, -0.8, 0)
+
+        this.ship.add(this.fire)
+
+        // Smoke particles effect
+        this.smokeParticles = []
+
+        const smokeTexture = textureLoader.load('/textures/smoke.png')
+
+        this.smokeMaterial = new THREE.SpriteMaterial({
+            map: smokeTexture,
+            transparent: true,
+            opacity: 0.5,
+            depthWrite: false
+        })
+
+        this.earth.pivot.add(this.ship)
+    }
+
+    update() {
+
+        this.time += 0.01
+    
+        // Phase 1: Launch
+        if (this.phase === 'launch') {
+
+            // Progressive acceleration
+            this.velocity += this.acceleration
+        
+            // Limit max velocity
+            if (this.velocity > this.maxVelocity) {
+                this.velocity = this.maxVelocity
+            }
+        
+            // Vertical movement
+            this.ship.position.y += this.velocity
+        
+            // Gravity turn
+            const tiltStart = 1.5
+            const tiltEnd = 6
+        
+            if (this.ship.position.y > tiltStart) {
+                const t = Math.min(
+                    (this.ship.position.y - tiltStart) / (tiltEnd - tiltStart),
+                    1
+                )
+        
+                this.ship.rotation.z = -t * 0.5
+            }
+        
+            // Small drift to simulate atmospheric effects
+            const drift = this.velocity * 0.3
+            this.ship.position.x += drift
+        
+            // Transition to orbit phase
+            if (this.ship.position.y > 2) {
+                this.phase = 'orbit'
+                this.orbitAngle = 0
+            }
+
+            // Flame animation
+            const scale = 1 + Math.sin(this.time * 20) * 0.2
+            this.fire.scale.set(0.5 * scale, 1.5 * scale, 1)
+
+            // Slight random movement to make it look more dynamic
+            this.fire.position.x = (Math.random() - 0.5) * 0.05
+            this.fire.position.z = (Math.random() - 0.5) * 0.05
+
+            // Generate smoke particles with a certain probability
+            if (Math.random() < 0.6) {
+
+                const smoke = new THREE.Sprite(this.smokeMaterial.clone())
+
+                smoke.scale.set(0.5, 0.5, 0.5)
+
+                // Position it at the base of the rocket with some random offset
+                smoke.position.set(
+                    (Math.random() - 0.5) * 0.3,
+                    -1,
+                    (Math.random() - 0.5) * 0.3
+                )
+
+                this.ship.add(smoke)
+
+                this.smokeParticles.push({
+                    sprite: smoke,
+                    life: 1
+                })
+            }
+
+            // Update smoke particles
+            this.smokeParticles.forEach((p, i) => {
+
+                p.life -= 0.01
+
+                p.sprite.position.y -= 0.02
+
+                p.sprite.material.opacity = p.life
+
+                p.sprite.scale.multiplyScalar(1.01)
+
+                if (p.life <= 0) {
+                    this.ship.remove(p.sprite)
+                    this.smokeParticles.splice(i, 1)
+                }
+            })
+        }
+
+        // Phase 2: Orbit
+        if (this.phase === 'orbit') {
+
+            this.orbitAngle += 0.02
+    
+            const r = 5
+    
+            const x = Math.cos(this.orbitAngle) * r
+            const z = Math.sin(this.orbitAngle) * r
+    
+            this.ship.position.set(x, 0, z)
+    
+            this.ship.lookAt(0, 0, 0)
+        }
+
+        // Camera follows the ship
+        const target = new THREE.Vector3()
+        this.ship.getWorldPosition(target)
+
+        const camPos = target.clone().add(new THREE.Vector3(2, 2, 2))
+
+        this.camera.position.lerp(camPos, 0.05)
+        this.camera.lookAt(target)
+    }
+
+    end(scene) {
+        SimulationSettings.missionMode = false
+        if (this.ship && this.ship.parent) {
+            this.ship.parent.remove(this.ship)
+        }
+    
+        this.ship = null
+
+        SimulationSettings.timeScale = 1
+    }
+}===== objects/artificialSatellite.js =====
+// src/objects/artificialSatellite.js
+
+import * as THREE from 'three'
+import { SimulationSettings } from '../systems/simulationSettings.js'
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js'
+
+export class ArtificialSatellite {
+    constructor({
+        name = 'satellite',
+        model,
+        size = 0.01,
+        distance = 2,
+        orbitSpeed = 0.05,
+        inclination = 0,
+        eccentricity = 0,
+        type = 'orbit'
+    }) {
+        this.name = name
+        this.distance = distance
+        this.orbitSpeed = orbitSpeed
+        this.inclination = inclination
+        this.eccentricity = eccentricity
+        this.size = size
+        this.model = model
+        this.angle = 0
+        this.loaded = false
+        this.type = type || 'orbit'
+        this.direction = new THREE.Vector3(1, 0.1, 0.2)
+        this.parentPlanet = null
+        this.escapeDistance = distance
+        this.escapeAngle = Math.random() * Math.PI * 2
+        this.escapeSpeed = 0.002
+        this.escapeCurve = 0.0005
+
+        // Orbital pivot with inclination
+        this.pivot = new THREE.Object3D()
+        this.pivot.rotation.z = inclination
+
+        // Container for the satellite model
+        this.container = new THREE.Object3D()
+        this.pivot.add(this.container)
+
+        // Load the satellite model
+        const loader = new GLTFLoader()
+
+        const dracoLoader = new DRACOLoader()
+        dracoLoader.setDecoderPath('/draco/') 
+        loader.setDRACOLoader(dracoLoader)
+
+        loader.load(this.model, (gltf) => {
+
+            const satellite = gltf.scene
+
+            // Scale the model
+            satellite.scale.set(size, size, size)
+
+            this.container.add(satellite)
+
+            this.loaded = true
+        })
+    }
+
+    addToPlanet(planet) {
+        this.parentPlanet = planet
+        planet.pivot.add(this.pivot)
+    }
+
+    update() {
+
+        if (!SimulationSettings.showSatellites) {
+            this.pivot.visible = false
+            return
+        }
+
+        // Hide in mission mode
+        if (SimulationSettings.missionMode) {
+            this.pivot && (this.pivot.visible = false)
+            this.line && (this.line.visible = false)
+            return
+        }
+
+        this.pivot.visible = true
+
+        if (SimulationSettings.pause) return
+
+        this.angle += this.orbitSpeed * SimulationSettings.timeScale
+
+        // Scape orbit (Voyager)
+        if (this.type === 'escape') {
+
+            this.escapeDistance += this.escapeSpeed * SimulationSettings.timeScale
+            this.escapeAngle += this.escapeCurve * SimulationSettings.timeScale
+
+            const dir = new THREE.Vector3(1, 0, 0)
+            
+            const drift = new THREE.Vector3(
+                Math.cos(this.escapeAngle) * 0.3,
+                0,
+                Math.sin(this.escapeAngle) * 0.3
+            )
+        
+            const finalPos = dir
+                .clone()
+                .multiplyScalar(this.escapeDistance)
+                .add(drift)
+        
+            this.pivot.position.copy(finalPos)
+        
+            return
+        }
+
+        // Solar orbit (Parker)
+        if (this.type === 'solarOrbit') {
+
+            const a = this.distance * (1 + this.eccentricity)
+            const b = this.distance * (1 - this.eccentricity)
+
+            const x = Math.cos(this.angle) * a
+            const z = Math.sin(this.angle) * b
+
+            this.pivot.position.set(x, 0, z)
+            return
+        }
+
+        // Lagrange (James Webb)
+        if (this.type === 'lagrange') {
+
+            const earthPos = this.parentPlanet.pivot.position
+
+            const offset = new THREE.Vector3(
+                Math.cos(this.angle) * this.distance,
+                0,
+                Math.sin(this.angle) * this.distance
+            )
+
+            this.pivot.position.copy(earthPos).add(offset)
+            return
+        }
+
+        // Normal orbit
+        if (this.type === 'orbit') {
+            
+            const x = Math.cos(this.angle) * this.distance
+            const z = Math.sin(this.angle) * this.distance
+
+            this.pivot.position.set(x, 0, z)
+        }
+
+    }
+}===== objects/orbit.js =====
+// src/objects/orbit.js
+
+import * as THREE from 'three'
+
+import { SimulationSettings } from '../systems/simulationSettings.js'
+
+export class Orbit {
+    constructor({
+      radius = 5,
+      segments = 128,
+      color = 0xffffff,
+      tilt = 0,
+      eccentricity = 0
+    }) {
+
+      this.radius = radius
+      this.eccentricity = eccentricity
+      this.isMoonOrbit = false
+
+      const points = []
+
+      for (let i = 0; i <= segments; i++) {
+
+        const angle = (i / segments) * Math.PI * 2
+
+        const a = radius * (1 + eccentricity)
+        const b = radius * (1 - eccentricity)
+
+        const x = Math.cos(angle) * a
+        const z = Math.sin(angle) * b
+
+        points.push(new THREE.Vector3(x, 0, z))
+      }
+
+      const geometry = new THREE.BufferGeometry().setFromPoints(points)
+
+      const material = new THREE.LineBasicMaterial({
+        color,
+        transparent: true,
+        opacity: 0.25
+      })
+
+      this.line = new THREE.LineLoop(geometry, material)
+      this.line.rotation.z = tilt
+      this.line.visible = true
+
+    }
+
+    addToObject(object) {
+      object.add(this.line)
+    }
+
+    addToScene(scene) {
+      scene.add(this.line)
+    }
+
+    update() {
+      // Toggle visibility based on settings
+      if (this.isMoonOrbit) {
+          this.line.visible = SimulationSettings.showMoonOrbits
+      } else {
+          this.line.visible = SimulationSettings.showPlanetOrbits
+      }
+
+      // Hide orbits in mission mode
+      if (SimulationSettings.missionMode) {
+        this.pivot && (this.pivot.visible = false)
+        this.line && (this.line.visible = false)
+        return
+    }
+  }
+}===== objects/planet.js =====
+// src/objects/Planet.js
+
+import * as THREE from 'three'
+
+import { loadTexture } from '../utils/textureLoader.js'
+import { SimulationSettings } from '../systems/simulationSettings.js'
+
+export class Planet {
+    constructor({
+        name = 'planet',
+        size = 1,
+        color = 0xffffff,
+        distance = 5,
+        orbitSpeed = 0.01,
+        rotationSpeed = 0.01,
+        texture,
+        info,
+        tilt,
+        eccentricity
+    }) 
+    {
+        this.name = name
+        this.orbitSpeed = orbitSpeed
+        this.rotationSpeed = rotationSpeed
+        this.info = info || {}
+        this.distance = distance
+        this.tilt = tilt || 0
+        this.eccentricity = eccentricity || 0
+        this.orbitPosition = new THREE.Vector3()
+        
+
+        // Geometry and material
+        const geometry = new THREE.SphereGeometry(size, 32, 32)
+
+        let material
+
+        // Use textures for the distinct planets
+        if (texture) {
+            material = new THREE.MeshStandardMaterial({ map: loadTexture(texture) })
+        } 
+        else {
+            material = new THREE.MeshStandardMaterial({ color })
+        }
+
+        this.mesh = new THREE.Mesh(geometry, material)
+        this.mesh.userData.parent = this
+
+        // Saturn ring (only if planet is Saturn)
+        if (this.name === 'Saturn') {
+
+            const ringGeometry = new THREE.RingGeometry(1.8, 3, 64)
+
+            const ringTexture = new THREE.TextureLoader().load('/textures/saturn_ring.png')
+
+            const ringMaterial = new THREE.MeshBasicMaterial({
+                map: ringTexture,
+                side: THREE.DoubleSide,
+                transparent: true,
+                opacity: 1
+            })
+
+            this.ring = new THREE.Mesh(ringGeometry, ringMaterial)
+            this.ring.rotation.x = Math.PI / 2.2
+            this.mesh.add(this.ring)
+        }
+
+        // Pivot for orbit
+        this.pivot = new THREE.Object3D()
+
+        // Position planet away from center
+        // this.mesh.position.x = distance
+
+        // Build hierarchy
+        this.pivot.add(this.mesh)
+
+        // Hitbox (invisible larger sphere for interaction)
+        const hitGeometry = new THREE.SphereGeometry(size * 2.2, 16, 16)
+        const hitMaterial = new THREE.MeshBasicMaterial({
+            transparent: true,
+            opacity: 0,
+            visible: false
+        })
+
+        this.hitbox = new THREE.Mesh(hitGeometry, hitMaterial)
+        // this.hitbox.position.x = distance
+
+        this.pivot.add(this.hitbox)
+
+        this.hitbox.userData.parent = this
+  }
+
+    // Add planet system to scene
+    addToScene(scene) {
+        scene.add(this.pivot)
+    }
+
+    // Update method (used by loop system)
+    update() {
+        if (SimulationSettings.pause) return
+        
+        // Orbit
+        this.angle = (this.angle || 0) + this.orbitSpeed * SimulationSettings.timeScale
+
+        const a = this.distance * (1 + (this.eccentricity || 0))
+        const b = this.distance * (1 - (this.eccentricity || 0))
+
+        const x = Math.cos(this.angle) * a
+        const z = Math.sin(this.angle) * b
+
+        this.orbitPosition.set(x, 0, z)
+
+        this.orbitPosition.applyAxisAngle(
+            new THREE.Vector3(0, 0, 1),
+            this.tilt
+        )
+
+        this.pivot.position.copy(this.orbitPosition)
+
+        // Self rotation
+        this.mesh.rotation.y += this.rotationSpeed
+    }
+}===== objects/satellite.js =====
+import * as THREE from 'three'
+import { loadTexture } from '../utils/textureLoader.js'
+import { SimulationSettings } from '../systems/simulationSettings.js'
+
+export class Satellite {
+    constructor({
+        name = 'satellite',
+        size = 0.2,
+        distance = 2,
+        orbitSpeed = 0.02,
+        rotationSpeed = 0.01,
+        texture,
+        tilt = 0,
+        eccentricity = 0,
+        tidalLock = false
+    }) {
+        
+        this.name = name
+        this.distance = distance
+        this.orbitSpeed = orbitSpeed
+        this.rotationSpeed = rotationSpeed
+
+        this.tilt = tilt
+        this.eccentricity = eccentricity
+        this.tidalLock = tidalLock
+
+        this.orbitPosition = new THREE.Vector3()
+        this.tiltAxis = new THREE.Vector3(0, 0, 1)
+        this.angle = 0
+
+        const geometry = new THREE.SphereGeometry(size, 32, 32)
+
+        const material = new THREE.MeshStandardMaterial({ map: loadTexture(texture) })
+
+        this.mesh = new THREE.Mesh(geometry, material)
+
+        // Pivot (orbit around planet)
+        this.pivot = new THREE.Object3D()
+        this.pivot.add(this.mesh)
+
+    }
+
+    addToPlanet(planet) {
+        planet.pivot.add(this.pivot)
+    }
+
+    update() {
+        if (!SimulationSettings.showMoons) {
+            this.mesh.visible = false
+            return
+        }
+    
+        this.mesh.visible = true
+    
+        if (SimulationSettings.pause) return
+        
+        this.angle += this.orbitSpeed * SimulationSettings.timeScale
+    
+        const a = this.distance * (1 + this.eccentricity)
+        const b = this.distance * (1 - this.eccentricity)
+    
+        const x = Math.cos(this.angle) * a
+        const z = Math.sin(this.angle) * b
+    
+        this.orbitPosition.set(x, 0, z)
+    
+        // Apply orbital tilt
+        this.orbitPosition.applyAxisAngle(this.tiltAxis, this.tilt)
+    
+        this.mesh.position.copy(this.orbitPosition)
+
+        // Rotate satellite on its own axis
+        if (this.tidalLock) {
+            this.mesh.lookAt(0, 0, 0) // always face parent planet
+        } else {
+            this.mesh.rotation.y += this.rotationSpeed
+        }
+    }
+}===== objects/sun.js =====
+// src/objects/Sun.js
+
+import * as THREE from 'three'
+
+import { loadTexture } from '../utils/textureLoader.js'
+import { SimulationSettings } from '../systems/simulationSettings.js'
+
+export class Sun {
+    constructor({
+        size = 2,
+        color = 0xffff00,
+        lightIntensity = 50,
+        lightDistance = 100
+    } = {}) {
+
+        // Geometry & material (visible sun)
+        const geometry = new THREE.SphereGeometry(size, 32, 32)
+        const material = new THREE.MeshBasicMaterial({
+            map: loadTexture('/textures/sun.jpg')
+        })
+
+        this.mesh = new THREE.Mesh(geometry, material)
+
+        // Light emitted by the sun
+        this.light = new THREE.PointLight(color, lightIntensity, lightDistance)
+        this.mesh.add(this.light)
+        this.light.position.set(0, 0, 0)
+    }
+
+    // Add sun to scene
+    addToScene(scene) {
+        scene.add(this.mesh)
+        scene.add(this.light)
+    }
+
+    update() {
+        if (SimulationSettings.pause) return
+        
+        // Slow rotation for visual effect
+        this.mesh.rotation.y += 0.002
+    }
+}===== systems/cameraController.js =====
+// src/systems/CameraController.js
+
+import * as THREE from 'three'
+
+export class CameraController {
+    constructor(camera, controls) {
+        this.camera = camera
+        this.controls = controls
+
+        this.initialPosition = camera.position.clone()
+        this.initialTarget = controls.target.clone()
+
+        this.targetPosition = new THREE.Vector3()
+        this.currentLookAt = new THREE.Vector3()
+        this.targetLookAt = new THREE.Vector3()
+
+        this.isMoving = false
+
+        this.followTarget = null
+        this.offset = new THREE.Vector3(3, 2, 3)
+    }
+
+    focusOn(object) {
+        this.followTarget = object
+        this.isMoving = false
+        this.controls.enabled = false 
+    }
+
+    clearFocus() {
+        this.followTarget = null
+    }
+
+    resetView() {
+        this.followTarget = null
+      
+        this.targetPosition.copy(this.initialPosition)
+        this.targetLookAt.copy(this.initialTarget)
+      
+        this.isMoving = true
+
+        this.controls.enabled = false
+
+        // this.controls.target.copy(this.initialTarget)
+        // this.controls.object.position.copy(this.initialPosition)
+        // this.controls.update()
+    }
+
+    update() {
+
+        // Follow target
+        if (this.followTarget) {
+            const worldPosition = new THREE.Vector3()
+            this.followTarget.mesh.getWorldPosition(worldPosition)
+        
+            const desiredPosition = worldPosition.clone().add(this.offset)
+        
+            this.camera.position.lerp(desiredPosition, 0.05)
+            this.controls.target.lerp(worldPosition, 0.05)
+            this.controls.update()
+        
+            return
+        }
+      
+        // Smoothly move back to initial position when no target
+        if (this.isMoving) {
+            this.camera.position.lerp(this.targetPosition, 0.05)
+            this.controls.target.lerp(this.targetLookAt, 0.05)
+            this.controls.update()
+        
+            const distance = this.camera.position.distanceTo(this.targetPosition)
+        
+            if (distance < 0.01) {
+                this.isMoving = false
+                this.controls.enabled = true
+                this.camera.position.copy(this.targetPosition)
+                this.controls.target.copy(this.targetLookAt)
+                this.controls.update()
+            }
+        }
+      }
+}===== systems/interactionSystem.js =====
+// src/systems/InteractionSystem.js
+
+import * as THREE from 'three'
+
+export class InteractionSystem {
+    constructor(camera, scene, objects) {
+        this.camera = camera
+        this.scene = scene
+        this.objects = objects
+        
+        this.raycaster = new THREE.Raycaster()
+        this.mouse = new THREE.Vector2()
+        
+        this.selectedObject = null
+        this.ignoreNextClick = false
+        
+        this.init()
+    }
+    
+    init() {
+        window.addEventListener('click', (event) => this.onClick(event))
+    }
+    
+    onClick(event) {
+        // Prevent interaction if the click was on the UI
+        if (this.ignoreNextClick) {
+            this.ignoreNextClick = false
+            return
+        }
+
+        // Normalize mouse coordinates (-1 to +1)
+        this.mouse.x = (event.clientX / window.innerWidth) * 2 - 1
+        this.mouse.y = -(event.clientY / window.innerHeight) * 2 + 1
+
+        // Raycast
+        this.raycaster.setFromCamera(this.mouse, this.camera)
+
+        // Collect all meshes
+        const meshes = this.objects.map(obj => obj.hitbox || obj.mesh).filter(Boolean)
+
+        const intersects = this.raycaster.intersectObjects(meshes, true)
+
+        if (intersects.length > 0) {
+            const selected = intersects[0].object.userData.parent
+
+            if (selected) {
+                this.select(selected)
+            }
+        }
+    }
+
+    select(object) {
+        this.selectedObject = object
+      
+        console.log('Selected:', object.name)
+      
+        // Show UI
+        if (this.onSelect) {
+            this.onSelect(object)
+        }
+      }
+
+    update() {
+        // future hover effects
+    }
+}===== systems/missionSystem.js =====
+export class MissionSystem {
+    constructor(scene, camera) {
+        this.scene = scene
+        this.camera = camera
+        this.activeMission = null
+    }
+
+    start(mission) {
+        this.activeMission = mission
+        this.activeMission.start(this.scene, this.camera)
+    }
+
+    stop() {
+        if (!this.activeMission) return
+        this.activeMission.end(this.scene)
+        this.activeMission = null
+    }
+
+    update() {
+        if (this.activeMission) {
+            this.activeMission.update()
+        }
+    }
+}===== systems/simulationSettings.js =====
+// src/systems/simulationSettings.js
+
+export const SimulationSettings = {
+    showPlanetOrbits: true,
+    showMoonOrbits: true,
+    showMoons: true,
+    showSatellites: true,
+    pause: false,
+    timeScale: 1,
+    missionMode: false
+}===== systems/solarSystem.js =====
+// src/systems/SolarSystem.js
+
+import { Sun } from '../objects/sun.js'
+import { Planet } from '../objects/planet.js'
+import { Orbit } from '../objects/orbit.js'
+import { InteractionSystem } from './interactionSystem.js'
+import { PlanetInfoUI } from '../ui/planetInfo.js'
+import { PLANETS } from '../data/planets.js'
+import { Satellite } from '../objects/satellite.js'
+import { SATELLITES } from '../data/satellites.js'
+import { ArtificialSatellite } from '../objects/artificialSatellite.js'
+import { ARTIFICIAL_SATELLITES } from '../data/artificialSatellites.js'
+import { SimulationSettings } from '../systems/simulationSettings.js'
+
+export class SolarSystem {
+    constructor(scene, camera) {
+        this.scene = scene
+        this.objects = []
+        this.ui = new PlanetInfoUI()
+        this.init(camera)
+    }
+  
+    init(camera) {
+
+        this.orbits = []
+
+        // Sun
+        const sun = new Sun({
+            size: 2,
+            lightIntensity: 5
+        })
+
+        sun.addToScene(this.scene)
+        this.objects.push(sun)
+
+        // Planets
+        for (const planetData of PLANETS) {
+            const planet = new Planet(planetData)
+            planet.addToScene(this.scene)
+            this.objects.push(planet)
+
+            // Add Moons (natural satellites)
+            const satellites = SATELLITES[planet.name]
+
+            if (satellites) {
+                for (const satData of satellites) {
+                    const satellite = new Satellite(satData)
+
+                    satellite.addToPlanet(planet)
+                    this.objects.push(satellite)
+                    
+                    // Moon orbit
+                    const orbit = new Orbit({
+                        radius: satData.distance,
+                        tilt: satData.tilt || 0,
+                        eccentricity: satData.eccentricity || 0,
+                        color: 0xaaaaaa
+                    })
+                    orbit.isMoonOrbit = true 
+                    
+                    orbit.addToObject(planet.pivot)
+                    this.orbits.push(orbit)
+                }
+            }
+
+            // Add Artificial Satellites
+            const artificials = ARTIFICIAL_SATELLITES[planet.name]
+
+            if (artificials) {
+                for (const satData of artificials) {
+                    const sat = new ArtificialSatellite(satData)
+
+                    if (satData.type === 'orbit' || satData.type === 'lagrange') {
+                        sat.addToPlanet(planet)
+                    } 
+                    else {
+                        this.scene.add(sat.pivot)
+                    }
+
+                    this.objects.push(sat)
+                }
+            }
+
+            // Planet orbit
+            const orbit = new Orbit({
+                radius: planetData.distance,
+                tilt: planetData.tilt || 0,
+                eccentricity: planetData.eccentricity || 0
+            })
+            orbit.isMoonOrbit = false
+
+            orbit.addToScene(this.scene)
+            this.orbits.push(orbit)
+        }
+
+        // Interaction system
+        this.interaction = new InteractionSystem(
+            camera,
+            this.scene,
+            this.objects
+        )
+          
+        this.interaction.onSelect = (planet) => {
+            this.ui.showPlanet(planet)
+
+            if (this.cameraController) {
+                this.cameraController.focusOn(planet)
+            }
+        }
+
+        this.ui.onExit = () => {
+            // Prevent click-through when exiting UI
+            if (this.interaction) {
+                this.interaction.ignoreNextClick = true
+            }
+
+            // Reset camera view
+            if (this.cameraController) {
+                this.cameraController.resetView()
+            }
+          
+            this.ui.hide()
+        }
+    }
+
+    // Called by loop
+    update() {
+        // Update all objects in the solar system
+        for (const obj of this.objects) {
+            if (obj.update) obj.update()
+        }
+
+        // Update orbits separately to ensure they are drawn correctly
+        for (const orbit of this.orbits) {
+            if (orbit.update) orbit.update()
+        }
+      
+        // Update interaction system
+        if (this.interaction) {
+            this.interaction.update()
+        }
+
+        // Pause updates if mission mode is active
+        if (SimulationSettings.missionMode) return
+    }
+}===== ui/controlsPanel.js =====
+// src/ui/controlsPanel.js
+
+import { SimulationSettings } from '../systems/simulationSettings.js'
+
+export class ControlsPanel {
+    constructor() {
+        this.createPanel()
+    }
+
+    createPanel() {
+        this.panel = document.createElement('div')
+
+        this.panel.style.position = 'absolute'
+        this.panel.style.bottom = '20px'
+        this.panel.style.left = '20px'
+        this.panel.style.padding = '15px'
+        this.panel.style.background = 'rgba(0,0,0,0.6)'
+        this.panel.style.border = '1px solid rgba(255,255,255,0.1)'
+        this.panel.style.borderRadius = '10px'
+        this.panel.style.color = 'white'
+        this.panel.style.fontFamily = 'Arial'
+        this.panel.style.minWidth = '200px'
+
+        this.panel.innerHTML = `
+            <h3 style="margin-top:0;">Controls</h3>
+
+            <label>
+                <input type="checkbox" id="toggle-moons" checked />
+                Moons
+            </label><br/>
+
+            <label>
+                <input type="checkbox" id="toggle-satellites" checked />
+                Artificial Satellites
+            </label><br/>
+
+            <label>
+                <input type="checkbox" id="toggle-planet-orbits" checked />
+                Planet Orbits
+            </label><br/>
+
+            <label>
+                <input type="checkbox" id="toggle-moon-orbits" checked />
+                Moon Orbits
+            </label><br/>
+
+            <label>
+                <input type="checkbox" id="toggle-pause" />
+                Pause Simulation
+            </label>
+
+            <br/><br/>
+
+            <label>
+                Simulation Speed
+            </label><br/>
+
+            <input 
+                type="range" 
+                id="time-scale" 
+                min="0" 
+                max="5" 
+                step="0.1" 
+                value="1"
+            />
+
+            <span id="time-scale-value">1x</span>
+
+            <hr/>
+            <h4>Missions</h4>
+
+            <button id="start-artemis">Start Artemis II</button>
+            <button id="stop-mission">Stop Mission</button>
+        `
+
+        document.body.appendChild(this.panel)
+
+        this.bindEvents()
+    }
+
+    bindEvents() {
+        document.getElementById('toggle-planet-orbits').onchange = (e) => {
+            SimulationSettings.showPlanetOrbits = e.target.checked
+        }
+
+        document.getElementById('toggle-moon-orbits').onchange = (e) => {
+            SimulationSettings.showMoonOrbits = e.target.checked
+        }
+
+        document.getElementById('toggle-moons').onchange = (e) => {
+            SimulationSettings.showMoons = e.target.checked
+        }
+
+        document.getElementById('toggle-pause').onchange = (e) => {
+            SimulationSettings.pause = e.target.checked
+        }
+
+        document.getElementById('toggle-satellites').onchange = (e) => {
+            SimulationSettings.showSatellites = e.target.checked
+        }
+
+        const slider = document.getElementById('time-scale')
+        const valueLabel = document.getElementById('time-scale-value')
+
+        slider.oninput = (e) => {
+            const value = parseFloat(e.target.value)
+            SimulationSettings.timeScale = value
+            valueLabel.innerText = value.toFixed(1) + 'x'
+        }
+    }
+}===== ui/planetInfo.js =====
+// src/ui/PlanetInfoUI.js
+
+export class PlanetInfoUI {
+    constructor() {
+        this.createPanel()
+    }
+  
+    createPanel() {
+        this.panel = document.createElement('div')
+        
+        this.panel.style.position = 'absolute'
+        this.panel.style.top = '20px'
+        this.panel.style.right = '20px'
+        this.panel.style.padding = '15px'
+        this.panel.style.border = '1px solid rgba(255,255,255,0.1)'
+        this.panel.style.color = 'white'
+        this.panel.style.fontFamily = 'Arial'
+        this.panel.style.borderRadius = '10px'
+        this.panel.style.display = 'none'
+        this.panel.style.minWidth = '220px'
+        this.panel.style.maxWidth = '260px'
+    
+        document.body.appendChild(this.panel)
+    }
+  
+    showPlanet(planet) {
+        const info = planet.info || {}
+      
+        this.panel.style.display = 'block'
+      
+        this.panel.innerHTML = `
+            <div style="display:flex; flex-direction:column; gap:10px;">
+            
+            <h2 style="margin:0; font-size:22px;">
+              ${planet.name}
+            </h2>
+      
+            <div style="height:2px; background:rgba(255,255,255,0.2);"></div>
+      
+            <p style="margin:0; font-size:14px; opacity:0.8;">
+              ${info.description || 'No description available'}
+            </p>
+      
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; font-size:13px;">
+              <div><strong>Radius:</strong><br>${info.radius || '-'}</div>
+              <div><strong>Moons:</strong><br>${info.moons ?? '-'}</div>
+              <div><strong>Day:</strong><br>${info.day || '-'}</div>
+              <div><strong>Year:</strong><br>${info.year || '-'}</div>
+            </div>
+      
+            <div style="margin-top:10px; font-size:12px; opacity:0.6;">
+              Distance from sun: ${planet.mesh.position.x}
+            </div>
+      
+            <button id="exit-btn" style="
+              margin-top:10px;
+              padding:8px;
+              border:none;
+              border-radius:6px;
+              background:#ff4d4d;
+              color:white;
+              cursor:pointer;
+            ">
+              Exit
+            </button>
+      
+          </div>
+        `
+      
+        document.getElementById('exit-btn').onclick = (e) => {
+            e.stopPropagation() // Prevent click from propagating to scene
+
+            if (this.onExit) {
+                this.onExit()
+            }
+        }
+    }
+  
+    hide() {
+        this.panel.style.display = 'none'
+    }
+  }===== utils/constants.js =====
+===== utils/helpers.js =====
+===== utils/textureLoader.js =====
+// src/utils/textureLoader.js
+
+import * as THREE from 'three'
+
+const loader = new THREE.TextureLoader()
+
+export function loadTexture(path) {
+    return loader.load(path)
+}

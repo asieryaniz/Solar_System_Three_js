@@ -10,6 +10,7 @@ import { Satellite } from '../objects/satellite.js'
 import { SATELLITES } from '../data/satellites.js'
 import { ArtificialSatellite } from '../objects/artificialSatellite.js'
 import { ARTIFICIAL_SATELLITES } from '../data/artificialSatellites.js'
+import { SimulationSettings } from '../systems/simulationSettings.js'
 
 export class SolarSystem {
     constructor(scene, camera) {
@@ -138,5 +139,8 @@ export class SolarSystem {
         if (this.interaction) {
             this.interaction.update()
         }
+
+        // Pause updates if mission mode is active
+        if (SimulationSettings.missionMode) return
     }
 }

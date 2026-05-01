@@ -87,6 +87,9 @@ export class Planet {
         this.pivot.add(this.hitbox)
 
         this.hitbox.userData.parent = this
+
+        // Track whether we've frozen the orbit position
+        this._orbitFrozen = false
   }
 
     // Add planet system to scene
@@ -97,6 +100,21 @@ export class Planet {
     // Update method (used by loop system)
     update() {
         if (SimulationSettings.pause) return
+
+        if (SimulationSettings.missionMode) {
+            // Freeze orbital position on first missionMode frame
+            if (!this._orbitFrozen) {
+                this._frozenPivotPos = this.pivot.position.clone()
+                this._orbitFrozen = true
+            }
+            // Keep pivot locked — only allow self-rotation
+            this.pivot.position.copy(this._frozenPivotPos)
+            this.mesh.rotation.y += this.rotationSpeed * SimulationSettings.timeScale
+            return
+        }
+ 
+        // Normal mode: unfreeze if we were frozen
+        this._orbitFrozen = false
         
         // Orbit
         this.angle = (this.angle || 0) + this.orbitSpeed * SimulationSettings.timeScale

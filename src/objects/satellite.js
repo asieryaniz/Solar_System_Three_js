@@ -38,6 +38,8 @@ export class Satellite {
         this.pivot = new THREE.Object3D()
         this.pivot.add(this.mesh)
 
+        // Track whether we've frozen the orbit position
+        this._orbitFrozen = false
     }
 
     addToPlanet(planet) {
@@ -53,6 +55,26 @@ export class Satellite {
         this.mesh.visible = true
     
         if (SimulationSettings.pause) return
+
+        if (SimulationSettings.missionMode) {
+            // Freeze orbital position on first missionMode frame
+            if (!this._orbitFrozen) {
+                this._frozenPos = this.mesh.position.clone()
+                this._orbitFrozen = true
+            }
+            this.mesh.position.copy(this._frozenPos)
+ 
+            // Still allow self-rotation
+            if (this.tidalLock) {
+                this.mesh.lookAt(0, 0, 0)
+            } else {
+                this.mesh.rotation.y += this.rotationSpeed * SimulationSettings.timeScale
+            }
+            return
+        }
+ 
+        // Normal mode: unfreeze
+        this._orbitFrozen = false
         
         this.angle += this.orbitSpeed * SimulationSettings.timeScale
     

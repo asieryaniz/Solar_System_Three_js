@@ -6,5 +6,6 @@ export const SimulationSettings = {
     showMoons: true,
     showSatellites: true,
     pause: false,
-    timeScale: 1
+    timeScale: 1,
+    missionMode: false
 }

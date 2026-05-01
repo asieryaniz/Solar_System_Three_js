@@ -12,6 +12,9 @@ import { SolarSystem } from './systems/solarSystem.js'
 import { CameraController } from './systems/cameraController.js'
 import { ControlsPanel } from './ui/controlsPanel.js'
 
+import { MissionSystem } from './systems/missionSystem.js'
+import { ArtemisII } from './missions/artemisII.js'
+
 const scene = createScene()
 const camera = createCamera()
 const renderer = createRenderer()
@@ -39,6 +42,20 @@ loop.add(solarSystem)
 // Add ambient light for basic illumination
 const ambientLight = new THREE.AmbientLight(0xffffff, 3)
 scene.add(ambientLight)
+
+// Mission system
+const missionSystem = new MissionSystem(scene, camera)
+loop.add(missionSystem)
+
+const artemis = new ArtemisII(solarSystem)
+
+document.getElementById('start-artemis').onclick = () => {
+    missionSystem.start(artemis)
+}
+
+document.getElementById('stop-mission').onclick = () => {
+    missionSystem.stop()
+}
 
 // Start the app
 loop.start()

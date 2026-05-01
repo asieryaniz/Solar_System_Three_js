@@ -65,6 +65,12 @@ export class ControlsPanel {
             />
 
             <span id="time-scale-value">1x</span>
+
+            <hr/>
+            <h4>Missions</h4>
+
+            <button id="start-artemis">Start Artemis II</button>
+            <button id="stop-mission">Stop Mission</button>
         `
 
         document.body.appendChild(this.panel)

@@ -55,10 +55,18 @@ export class Orbit {
     }
 
     update() {
+      // Toggle visibility based on settings
       if (this.isMoonOrbit) {
           this.line.visible = SimulationSettings.showMoonOrbits
       } else {
           this.line.visible = SimulationSettings.showPlanetOrbits
       }
+
+      // Hide orbits in mission mode
+      if (SimulationSettings.missionMode) {
+        this.pivot && (this.pivot.visible = false)
+        this.line && (this.line.visible = false)
+        return
+    }
   }
 }

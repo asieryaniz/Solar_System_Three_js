@@ -73,6 +73,13 @@ export class ArtificialSatellite {
             return
         }
 
+        // Hide in mission mode
+        if (SimulationSettings.missionMode) {
+            this.pivot && (this.pivot.visible = false)
+            this.line && (this.line.visible = false)
+            return
+        }
+
         this.pivot.visible = true
 
         if (SimulationSettings.pause) return
