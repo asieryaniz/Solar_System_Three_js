@@ -45,6 +45,17 @@ export class CameraController {
         // this.controls.update()
     }
 
+    focusOnObject(object) {
+
+        const pos = new THREE.Vector3()
+        object.getWorldPosition(pos)
+    
+        this.targetPosition.copy(pos)
+        this.offset.set(2, 2, 2)
+    
+        this.focusedObject = object
+    }
+
     update() {
 
         // Follow target

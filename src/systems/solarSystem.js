@@ -11,18 +11,21 @@ import { SATELLITES } from '../data/satellites.js'
 import { ArtificialSatellite } from '../objects/artificialSatellite.js'
 import { ARTIFICIAL_SATELLITES } from '../data/artificialSatellites.js'
 import { SimulationSettings } from '../systems/simulationSettings.js'
+import { SatelliteInfoUI } from '../ui/satelliteInfo.js'
 
 export class SolarSystem {
     constructor(scene, camera) {
         this.scene = scene
         this.objects = []
         this.ui = new PlanetInfoUI()
+        this.satelliteUI = new SatelliteInfoUI()
         this.init(camera)
     }
   
     init(camera) {
 
         this.orbits = []
+        this.artificialSatellites = []
 
         // Sun
         const sun = new Sun({
@@ -78,6 +81,7 @@ export class SolarSystem {
                     }
 
                     this.objects.push(sat)
+                    this.artificialSatellites.push(sat)
                 }
             }
 
@@ -101,6 +105,7 @@ export class SolarSystem {
         )
           
         this.interaction.onSelect = (planet) => {
+            this.satelliteUI.hide()
             this.ui.showPlanet(planet)
 
             if (this.cameraController) {
@@ -120,6 +125,26 @@ export class SolarSystem {
             }
           
             this.ui.hide()
+        }
+
+        this.satelliteUI.onExit = () => {
+
+            if (this.cameraController) {
+                this.cameraController.resetView()
+            }
+        
+            this.satelliteUI.hide()
+        }
+    }
+
+    // Called by controls panel when an artificial satellite is selected
+    onSatelliteSelect(sat) {
+
+        this.ui.hide()
+        this.satelliteUI.showSatellite(sat)
+    
+        if (this.cameraController) {
+            this.cameraController.focusOn({mesh: sat.container})
         }
     }
 

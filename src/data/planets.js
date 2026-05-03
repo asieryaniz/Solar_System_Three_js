@@ -11,6 +11,7 @@ export const PLANETS = [
       eccentricity: 0.21,
       texture: '/textures/mercury.png',
       info: {
+        sunDistance: '57.9 million km',
         radius: '2,439 km',
         day: '58.6 Earth days',
         year: '88 days',
@@ -28,6 +29,7 @@ export const PLANETS = [
       eccentricity: 0.007,
       texture: '/textures/venus.jpg',
       info: {
+        sunDistance: '108.2 million km',
         radius: '6,052 km',
         day: '243 Earth days',
         year: '225 days',
@@ -45,6 +47,7 @@ export const PLANETS = [
       eccentricity: 0.017,
       texture: '/textures/earth.jpg',
       info: {
+        sunDistance: '149.6 million km',
         radius: '6,371 km',
         day: '24 hours',
         year: '365 days',
@@ -62,6 +65,7 @@ export const PLANETS = [
       eccentricity: 0.094,
       texture: '/textures/mars.jpeg',
       info: {
+        sunDistance: '227.9 million km',
         radius: '3,390 km',
         day: '24.6 hours',
         year: '687 days',
@@ -79,6 +83,7 @@ export const PLANETS = [
       eccentricity: 0.049,
       texture: '/textures/jupiter.jpg',
       info: {
+        sunDistance: '778.5 million km',
         radius: '69,911 km',
         day: '10 hours',
         year: '12 years',
@@ -96,6 +101,7 @@ export const PLANETS = [
       eccentricity: 0.056,
       texture: '/textures/saturn.jpg',
       info: {
+        sunDistance: '1.4 billion km',
         radius: '58,232 km',
         day: '10.7 hours',
         year: '29 years',
@@ -113,6 +119,7 @@ export const PLANETS = [
       eccentricity: 0.047,
       texture: '/textures/uranus.jpeg',
       info: {
+        sunDistance: '2.9 billion km',
         radius: '25,362 km',
         day: '17 hours',
         year: '84 years',
@@ -130,6 +137,7 @@ export const PLANETS = [
       eccentricity: 0.009,
       texture: '/textures/neptune.jpeg',
       info: {
+        sunDistance: '4.5 billion km',
         radius: '24,622 km',
         day: '16 hours',
         year: '165 years',

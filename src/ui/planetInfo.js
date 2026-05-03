@@ -49,7 +49,7 @@ export class PlanetInfoUI {
             </div>
       
             <div style="margin-top:10px; font-size:12px; opacity:0.6;">
-              Distance from sun: ${planet.mesh.position.x}
+              Distance from sun: ${info.sunDistance || '-'}
             </div>
       
             <button id="exit-btn" style="

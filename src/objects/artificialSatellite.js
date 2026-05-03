@@ -32,6 +32,7 @@ export class ArtificialSatellite {
         this.escapeAngle = Math.random() * Math.PI * 2
         this.escapeSpeed = 0.002
         this.escapeCurve = 0.0005
+        this.info = arguments[0].info || {}
 
         // Orbital pivot with inclination
         this.pivot = new THREE.Object3D()
@@ -40,6 +41,7 @@ export class ArtificialSatellite {
         // Container for the satellite model
         this.container = new THREE.Object3D()
         this.pivot.add(this.container)
+        this.container.userData.parent = this
 
         // Load the satellite model
         const loader = new GLTFLoader()

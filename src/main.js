@@ -43,6 +43,14 @@ loop.add(solarSystem)
 const ambientLight = new THREE.AmbientLight(0xffffff, 3)
 scene.add(ambientLight)
 
+// Pass satellite data to the controls panel
+controlsPanel.setSatellites(
+  solarSystem.artificialSatellites,
+  (sat) => {
+      solarSystem.onSatelliteSelect(sat)
+  }
+)
+
 // Mission system
 const missionSystem = new MissionSystem(scene, camera)
 loop.add(missionSystem)

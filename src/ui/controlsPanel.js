@@ -49,6 +49,9 @@ export class ControlsPanel {
                 Pause Simulation
             </label>
 
+            <h4>Artificial Satellites</h4>
+            <div id="satellite-list"></div>
+
             <br/><br/>
 
             <label>
@@ -107,5 +110,27 @@ export class ControlsPanel {
             SimulationSettings.timeScale = value
             valueLabel.innerText = value.toFixed(1) + 'x'
         }
+    }
+    
+    setSatellites(satellites, onClick) {
+
+        const container = document.getElementById('satellite-list')
+        container.innerHTML = ''
+    
+        satellites.forEach(sat => {
+            const btn = document.createElement('button')
+            btn.innerText = sat.name
+    
+            btn.style.display = 'block'
+            btn.style.marginBottom = '5px'
+            btn.style.width = '100%'
+
+            btn.onclick = () => {
+                console.log('Clicked satellite:', sat)
+                onClick(sat)
+            }
+    
+            container.appendChild(btn)
+        })
     }
 }
