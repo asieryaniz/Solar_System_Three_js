@@ -41,7 +41,7 @@ const STYLES = `
         font-family: 'Orbitron', Arial, sans-serif;
         font-size: 20px;
         font-weight: 700;
-        color: #e8dcc8;
+        color: #f5ede0;
         letter-spacing: 2px;
         margin: 0 0 4px;
     }
@@ -62,7 +62,7 @@ const STYLES = `
 
     .sp-info-desc {
         font-size: 12.5px;
-        color: #6b6050;
+        color: #c8bca8;
         line-height: 1.65;
         margin: 0 0 14px;
     }
@@ -75,15 +75,15 @@ const STYLES = `
     }
 
     .sp-stat-cell {
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid rgba(200, 169, 110, 0.13);
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(200, 169, 110, 0.18);
         border-radius: 8px;
         padding: 8px 10px;
     }
 
     .sp-stat-label {
         font-size: 9px;
-        color: #5a5040;
+        color: #c8a96e;
         letter-spacing: 1.5px;
         text-transform: uppercase;
         margin-bottom: 3px;
@@ -92,15 +92,15 @@ const STYLES = `
     .sp-stat-value {
         font-family: 'Orbitron', Arial, sans-serif;
         font-size: 12px;
-        color: #e8dcc8;
+        color: #f5ede0;
     }
 
     .sp-distance-row {
         font-size: 11.5px;
-        color: #6b6050;
+        color: #c8bca8;
         padding: 8px 10px;
-        background: rgba(200, 169, 110, 0.06);
-        border: 1px solid rgba(200, 169, 110, 0.15);
+        background: rgba(200, 169, 110, 0.07);
+        border: 1px solid rgba(200, 169, 110, 0.18);
         border-radius: 8px;
         margin-bottom: 14px;
         line-height: 1.5;
@@ -120,9 +120,9 @@ const STYLES = `
         width: 100%;
         padding: 9px;
         background: transparent;
-        border: 1px solid rgba(200, 100, 80, 0.28);
+        border: 1px solid rgba(200, 100, 80, 0.35);
         border-radius: 8px;
-        color: rgba(200, 100, 80, 0.6);
+        color: rgba(220, 130, 110, 0.85);
         font-family: 'Orbitron', Arial, sans-serif;
         font-size: 9px;
         letter-spacing: 2px;
@@ -132,9 +132,9 @@ const STYLES = `
     }
 
     .sp-btn-exit:hover {
-        background: rgba(200, 100, 80, 0.1);
-        border-color: rgba(200, 100, 80, 0.55);
-        color: #c86450;
+        background: rgba(200, 100, 80, 0.12);
+        border-color: rgba(200, 100, 80, 0.65);
+        color: #e08070;
     }
 `
 

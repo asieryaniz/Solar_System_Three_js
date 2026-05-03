@@ -42,7 +42,7 @@ const STYLES = `
         font-size: 9px;
         letter-spacing: 3px;
         text-transform: uppercase;
-        color: #c8a96e;
+        color: #f5ede0;
         margin: 0 0 10px;
         display: flex;
         align-items: center;
@@ -94,7 +94,7 @@ const STYLES = `
 
     .sp-sat-desc {
         font-size: 12.5px;
-        color: #6b6050;
+        color: #f5ede0;
         line-height: 1.65;
         margin: 0 0 14px;
     }
@@ -111,7 +111,7 @@ const STYLES = `
         align-items: center;
         gap: 9px;
         font-size: 12px;
-        color: #6b6050;
+        color: #f5ede0;
         padding: 6px 0;
         border-bottom: 1px solid rgba(200, 169, 110, 0.08);
         transition: color 0.15s;
