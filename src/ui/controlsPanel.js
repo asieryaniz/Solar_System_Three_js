@@ -49,9 +49,6 @@ export class ControlsPanel {
                 Pause Simulation
             </label>
 
-            <h4>Artificial Satellites</h4>
-            <div id="satellite-list"></div>
-
             <br/><br/>
 
             <label>
@@ -68,6 +65,9 @@ export class ControlsPanel {
             />
 
             <span id="time-scale-value">1x</span>
+
+            <h4>Artificial Satellites</h4>
+            <div id="satellite-list"></div>
 
             <hr/>
             <h4>Missions</h4>
