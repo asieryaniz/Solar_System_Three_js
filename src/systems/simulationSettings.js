@@ -7,5 +7,6 @@ export const SimulationSettings = {
     showSatellites: true,
     pause: false,
     timeScale: 1,
-    missionMode: false
+    missionMode: false,
+    ambientIntensity: 3
 }

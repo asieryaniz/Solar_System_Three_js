@@ -11,6 +11,7 @@ import { createControls } from './controls/controls.js'
 import { SolarSystem } from './systems/solarSystem.js'
 import { CameraController } from './systems/cameraController.js'
 import { ControlsPanel } from './ui/controlsPanel.js'
+import { SimulationSettings } from './systems/simulationSettings.js'
 
 import { MissionSystem } from './systems/missionSystem.js'
 import { ArtemisII } from './missions/artemisII.js'
@@ -40,8 +41,13 @@ solarSystem.cameraController = cameraController
 loop.add(solarSystem)
 
 // Add ambient light for basic illumination
-const ambientLight = new THREE.AmbientLight(0xffffff, 3)
+const ambientLight = new THREE.AmbientLight(0xffffff, SimulationSettings.ambientIntensity)
 scene.add(ambientLight)
+loop.add({
+  update: () => {
+      ambientLight.intensity = SimulationSettings.ambientIntensity
+  }
+})
 
 // Pass satellite data to the controls panel
 controlsPanel.setSatellites(

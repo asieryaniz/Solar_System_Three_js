@@ -52,7 +52,7 @@ export class Planet {
 
             const ringTexture = new THREE.TextureLoader().load('/textures/saturn_ring.png')
 
-            const ringMaterial = new THREE.MeshBasicMaterial({
+            const ringMaterial = new THREE.MeshStandardMaterial({
                 map: ringTexture,
                 side: THREE.DoubleSide,
                 transparent: true,

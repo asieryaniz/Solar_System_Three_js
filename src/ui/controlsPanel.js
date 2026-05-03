@@ -314,6 +314,22 @@ export class ControlsPanel {
                 />
             </div>
 
+            <div style="margin-top:14px;">
+                <div class="sp-slider-header">
+                    <span>Ambient illumination</span>
+                    <span class="sp-slider-value" id="ambient-light-value">1.0×</span>
+                </div>
+                <input
+                    class="sp-range"
+                    type="range"
+                    id="ambient-light"
+                    min="0"
+                    max="5"
+                    step="0.1"
+                    value="3"
+                />
+            </div>
+
             <div class="sp-divider"></div>
 
             <div class="sp-section-label">Satellites</div>
@@ -355,6 +371,15 @@ export class ControlsPanel {
             const value = parseFloat(e.target.value)
             SimulationSettings.timeScale = value
             valueLabel.innerText = value.toFixed(1) + '×'
+        }
+
+        const ambientSlider = document.getElementById('ambient-light')
+        const ambientLabel = document.getElementById('ambient-light-value')
+
+        ambientSlider.oninput = (e) => {
+            const value = parseFloat(e.target.value)
+            SimulationSettings.ambientIntensity = value
+            ambientLabel.innerText = value.toFixed(1)
         }
     }
 

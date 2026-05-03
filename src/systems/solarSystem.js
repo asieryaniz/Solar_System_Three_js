@@ -30,7 +30,8 @@ export class SolarSystem {
         // Sun
         const sun = new Sun({
             size: 2,
-            lightIntensity: 5
+            lightIntensity: 200,
+            lightDistance: 0
         })
 
         sun.addToScene(this.scene)
