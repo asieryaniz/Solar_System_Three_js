@@ -19,7 +19,6 @@ import { ArtemisII } from './missions/artemisII.js'
 const scene = createScene()
 const camera = createCamera()
 const renderer = createRenderer()
-
 const loop = createLoop(renderer, scene, camera)
 
 // Add UI controls panel
@@ -64,12 +63,24 @@ loop.add(missionSystem)
 const artemis = new ArtemisII(solarSystem)
 
 document.getElementById('start-artemis').onclick = () => {
-    missionSystem.start(artemis)
+  cameraController.isMoving    = false
+  cameraController.followTarget = null
+  controls.enabled = false
+  missionSystem.start(artemis)
 }
 
 document.getElementById('stop-mission').onclick = () => {
-    missionSystem.stop()
+  missionSystem.stop()
+  cameraController.resetView()
 }
+
+window.addEventListener('artemis:stop', () => {
+  missionSystem.stop()
+  // Reset OrbitControls target back to solar system origin and restore view
+  controls.target.set(0, 0, 0)
+  controls.enabled = true
+  cameraController.resetView()
+})
 
 // Start the app
 loop.start()

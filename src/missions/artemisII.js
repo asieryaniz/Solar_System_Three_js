@@ -1,736 +1,610 @@
 // src/missions/artemisII.js
 
 import * as THREE from 'three'
-import { SimulationSettings } from '../systems/simulationSettings.js'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js'
+import { SimulationSettings } from '../systems/simulationSettings.js'
+import { ArtemisHUD } from '../ui/artemisHUD.js'
 
-// ─────────────────────────────────────────────
-//  TUNING — adjust these if visuals are off
-// ─────────────────────────────────────────────
+const EARTH_R = 1
+const MOON_ORBIT_R = 3.5
+const LEO_R = EARTH_R + 0.55 // Low Earth Orbit
+const MOON_FIXED_POS = new THREE.Vector3(MOON_ORBIT_R, 0, 0)
+const CAM_LERP = 0.028
 
-// Scale applied to the .glb model
-const MODEL_SCALE = 0.02
+// Phases
+const PHASES = [
+    { id: 'launch', label: 'LAUNCH', subtitle: 'SLS lifts off from LC-39B', duration: 380 },
+    { id: 'parking_orbit', label: 'PARKING ORBIT', subtitle: 'Crew confirms systems nominal', duration: 300 },
+    { id: 'tli', label: 'TRANS-LUNAR INJECTION', subtitle: 'ICPS burns for 22 minutes', duration: 360 },
+    { id: 'coast', label: 'TRANSLUNAR COAST', subtitle: '3 days, 18 hours to the Moon', duration: 480 },
+    { id: 'flyby', label: 'LUNAR FLYBY', subtitle: 'Closest approach: 8,900 km', duration: 400 },
+    { id: 'return', label: 'FREE RETURN', subtitle: "Moon's gravity slings Orion home", duration: 360 },
+    { id: 'reentry', label: 'RE-ENTRY', subtitle: 'Orion hits atmosphere at 11 km/s', duration: 300 },
+    { id: 'splashdown', label: 'SPLASHDOWN', subtitle: 'Pacific Ocean recovery — Mission Complete', duration: 300 },
+]
 
-// After loading, we auto-detect the model's "up" axis from its bounding box.
-// If the rocket still looks wrong, override here with one of:
-//   null        → use auto-detection (default)
-//   'posY'      → nose already points +Y
-//   'negY'      → nose points -Y
-//   'posZ'      → nose points +Z  (try this first if auto fails)
-//   'negZ'      → nose points -Z
-//   'posX'      → nose points +X
-//   'negX'      → nose points -X
-const FORCE_MODEL_AXIS = null
-
-// How far below the model origin the engine nozzle is, in MODEL-LOCAL units
-// (before scale). Increase this if fire appears too high.
-const NOZZLE_LOCAL_Y = -50   // model units (will be multiplied by MODEL_SCALE)
-
-// ─────────────────────────────────────────────
-//  Altitude constants (scene units)
-// ─────────────────────────────────────────────
-
-const LEO_ALT   = 2.8
-const LUNAR_ALT = 1.2
-
-// ─────────────────────────────────────────────
-//  Phase config
-// ─────────────────────────────────────────────
-
-const PHASE_ORDER = ['launch', 'earth-orbit', 'tli', 'lunar-orbit', 'return', 'splashdown']
-
-const PHASE_DURATION = {
-    launch:        700,
-    'earth-orbit': 900,
-    tli:           1000,
-    'lunar-orbit': 1000,
-    return:        1000,
-    splashdown:    500
+// Phase segment mapping to trajectory curves
+//  curveA — launch + parking_orbit + TLI  (points always >= LEO_R from the origin)
+//  curveB — coast + flyby + return + reentry + splashdown
+const PHASE_CURVE = {
+    launch: { curve: 'A', range: [0.00, 0.30] },
+    parking_orbit: { curve: 'A', range: [0.30, 0.65] },
+    tli: { curve: 'A', range: [0.65, 1.00] },
+    coast: { curve: 'B', range: [0.00, 0.38] },
+    flyby: { curve: 'B', range: [0.38, 0.52] },
+    return: { curve: 'B', range: [0.52, 0.78] },
+    reentry: { curve: 'B', range: [0.78, 0.93] },
+    splashdown: { curve: 'B', range: [0.93, 1.00] },
 }
 
-const PHASE_LABELS = {
-    'launch':       '🚀  Phase 1 – Launch',
-    'earth-orbit':  '🌍  Phase 2 – Earth Orbit (LEO)',
-    'tli':          '🔥  Phase 3 – Trans-Lunar Injection',
-    'lunar-orbit':  '🌕  Phase 4 – Lunar Orbit (DRO)',
-    'return':       '↩️   Phase 5 – Return to Earth',
-    'splashdown':   '🌊  Phase 6 – Re-entry & Splashdown'
-}
+// Helpers
 
-// Camera offset and lerp speed per phase
-const CAM_RIGS = {
-    launch:        { offset: new THREE.Vector3(3,  0.5, 1.5), lerpSpeed: 0.06 },
-    'earth-orbit': { offset: new THREE.Vector3(4,  1.5, 4),   lerpSpeed: 0.04 },
-    tli:           { offset: new THREE.Vector3(5,  2,   5),   lerpSpeed: 0.025 },
-    'lunar-orbit': { offset: new THREE.Vector3(3,  1,   3),   lerpSpeed: 0.04 },
-    return:        { offset: new THREE.Vector3(4,  1.5, 4),   lerpSpeed: 0.03 },
-    splashdown:    { offset: new THREE.Vector3(1.5,4,   1.5), lerpSpeed: 0.05 }
-}
-
-// Frames for smooth blends at phase transitions
-const QUAT_BLEND_TICKS = 120
-const CAM_BLEND_TICKS  = 150
-
-// ─────────────────────────────────────────────
-//  Math helpers
-// ─────────────────────────────────────────────
-
-function bezier3(p0, p1, p2, p3, t) {
-    const mt = 1 - t
-    return p0.clone().multiplyScalar(mt * mt * mt)
-        .add(p1.clone().multiplyScalar(3 * mt * mt * t))
-        .add(p2.clone().multiplyScalar(3 * mt * t * t))
-        .add(p3.clone().multiplyScalar(t * t * t))
-}
-
-function smoothstep(t) {
-    t = Math.max(0, Math.min(1, t))
-    return t * t * (3 - 2 * t)
-}
-
-function easeInOutCubic(t) {
-    t = Math.max(0, Math.min(1, t))
-    return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
-}
-
-/**
- * Build a quaternion that rotates the ship so its local +Y points along worldDir.
- * This is the canonical "nose direction" convention used throughout this file.
- */
-function quatLookUp(worldDir) {
-    const up = worldDir.clone().normalize()
-    // Pick an arbitrary "forward" that is not parallel to up
-    let fwd = new THREE.Vector3(0, 0, 1)
-    if (Math.abs(up.dot(fwd)) > 0.99) fwd = new THREE.Vector3(1, 0, 0)
-    const right = new THREE.Vector3().crossVectors(fwd, up).normalize()
-    const back  = new THREE.Vector3().crossVectors(up, right)
-    const m = new THREE.Matrix4().makeBasis(right, up, back)
-    return new THREE.Quaternion().setFromRotationMatrix(m)
-}
-
-// ─────────────────────────────────────────────
-//  Trail
-// ─────────────────────────────────────────────
-
-class ShipTrail {
-    constructor(scene, maxPoints = 2000) {
-        this.maxPoints = maxPoints
-        this.positions = []
-        const geo = new THREE.BufferGeometry()
-        this._buf = new Float32Array(maxPoints * 3)
-        geo.setAttribute('position', new THREE.BufferAttribute(this._buf, 3))
-        geo.setDrawRange(0, 0)
-        this.line = new THREE.Line(geo, new THREE.LineBasicMaterial({
-            color: 0x88ccff, transparent: true, opacity: 0.55
-        }))
-        this.line.frustumCulled = false
-        scene.add(this.line)
-    }
-
-    add(pos) {
-        this.positions.push(pos.clone())
-        if (this.positions.length > this.maxPoints) this.positions.shift()
-        const len = this.positions.length
-        for (let i = 0; i < len; i++) {
-            this._buf[i * 3]     = this.positions[i].x
-            this._buf[i * 3 + 1] = this.positions[i].y
-            this._buf[i * 3 + 2] = this.positions[i].z
-        }
-        this.line.geometry.attributes.position.needsUpdate = true
-        this.line.geometry.setDrawRange(0, len)
-    }
-
-    dispose(scene) {
-        scene.remove(this.line)
-        this.line.geometry.dispose()
-        this.line.material.dispose()
-    }
-}
-
-// ─────────────────────────────────────────────
-//  ArtemisII
-// ─────────────────────────────────────────────
-
-export class ArtemisII {
-
-    constructor(solarSystem) {
-        this.solarSystem = solarSystem
-    }
-
-    // ── Lifecycle ──────────────────────────────
-
-    start(scene, camera) {
-        this.scene  = scene
-        this.camera = camera
-
-        SimulationSettings.missionMode = true
-        SimulationSettings.timeScale   = 0.03
-
-        this.earth = this.solarSystem.objects.find(o => o.name === 'Earth')
-        this.moon  = this.solarSystem.objects.find(o => o.name === 'Moon')
-
-        this.tick      = 0
-        this.totalTick = 0
-
-        // Quaternion slerp state
-        this._quatFrom      = new THREE.Quaternion()
-        this._quatTo        = new THREE.Quaternion()
-        this._quatBlendTick = QUAT_BLEND_TICKS  // "done"
-
-        // Camera blend state
-        this._camOffsetFrom = null
-        this._camBlendTick  = CAM_BLEND_TICKS   // "done"
-
-        // The root group lives in world space
-        this.shipGroup = new THREE.Object3D()
-        this.shipGroup.name = 'ArtemisII'
-        scene.add(this.shipGroup)
-
-        // orientNode: its LOCAL +Y axis = rocket nose direction.
-        // The model is loaded inside this node with a correction rotation
-        // so that whatever axis the .glb uses, after correction the nose is +Y.
-        this.orientNode = new THREE.Object3D()
-        this.shipGroup.add(this.orientNode)
-
-        // effectsNode: sprites live here, scaled to match the model
-        // It is a child of orientNode so effects inherit orientation.
-        this.effectsNode = new THREE.Object3D()
-        this.orientNode.add(this.effectsNode)
-
-        this._loadModel()
-        this._buildEffects()
-
-        this.trail = new ShipTrail(scene)
-        this._buildUI()
-
-        // Initial position: directly above Earth along world +Y
-        const ep  = this._earthPos()
-        const er  = this._earthRadius()
-        this._launchDir = new THREE.Vector3(0, 1, 0)  // world "up" at launch site
-        this.shipGroup.position.copy(ep).addScaledVector(this._launchDir, er + 0.05)
-        this.shipGroup.quaternion.copy(quatLookUp(this._launchDir))
-
-        this._initPhase('launch')
-    }
-
-    update() {
-        if (!this.shipGroup) return
-
-        this.tick++
-        this.totalTick++
-
-        if (this._quatBlendTick < QUAT_BLEND_TICKS) this._quatBlendTick++
-        if (this._camBlendTick  < CAM_BLEND_TICKS)  this._camBlendTick++
-
-        const fn = `_phase_${this.phase.replace(/-/g, '_')}`
-        if (this[fn]) this[fn]()
-
-        // Apply ongoing quaternion slerp (overrides phase handler's setQuaternion)
-        this._tickQuatBlend()
-
-        this.trail.add(this.shipGroup.position)
-        this._updateCamera()
-
-        if (this.tick >= PHASE_DURATION[this.phase]) this._nextPhase()
-    }
-
-    end() {
-        SimulationSettings.missionMode = false
-        SimulationSettings.timeScale   = 1
-        if (this.trail) this.trail.dispose(this.scene)
-        if (this.shipGroup?.parent) this.shipGroup.parent.remove(this.shipGroup)
-        this.shipGroup = null
-        this._removeUI()
-    }
-
-    // ── Model loading ─────────────────────────
-
-    _loadModel() {
+function loadArtemisModel() {
+    return new Promise((resolve) => {
         const loader = new GLTFLoader()
         const draco  = new DRACOLoader()
         draco.setDecoderPath('/draco/')
         loader.setDRACOLoader(draco)
 
-        loader.load('/models/artemis.glb', (gltf) => {
-            const model = gltf.scene
-            model.scale.setScalar(MODEL_SCALE)
+        loader.load(
+            '/models/artemis.glb',
+            (gltf) => {
+                const model = gltf.scene
+                const box = new THREE.Box3().setFromObject(model)
+                const size = box.getSize(new THREE.Vector3()).length()
+                model.scale.setScalar(0.12 / size)
+                box.setFromObject(model)
+                model.position.sub(box.getCenter(new THREE.Vector3()))
+                model.traverse(c => { if (c.isMesh) { c.castShadow = true; c.receiveShadow = true } })
+                resolve(model)
+            },
+            undefined,
+            () => {
+                console.warn('[ArtemisII] artemis.glb no encontrado — usando placeholder')
+                const g = new THREE.Group()
+                g.add(new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.03, 0.035, 0.18, 16),
+                    new THREE.MeshStandardMaterial({ color: 0xc8b89a, metalness: 0.4, roughness: 0.5 })
+                ))
+                resolve(g)
+            }
+        )
+    })
+}
 
-            // Detect or force the model's nose axis
-            const axis = FORCE_MODEL_AXIS ?? this._detectNoseAxis(model)
-            console.log(`[ArtemisII] model nose axis detected: ${axis}`)
-
-            // Apply correction so nose ends up at local +Y of orientNode
-            this._applyAxisCorrection(model, axis)
-
-            this.orientNode.add(model)
-
-            // Now that we know the model's corrected size, reposition the
-            // effectsNode nozzle offset in world-model units
-            this._repositionEffects(axis)
-        })
+// Create the flame plume effect of the rocket
+function makePlume(scene, color = 0xff8c00, count = 200) {
+    const positions = new Float32Array(count * 3)
+    const velocities = Array.from({ length: count }, () =>
+        new THREE.Vector3(
+            (Math.random() - 0.5) * 0.003,
+            -(Math.random() * 0.014 + 0.004),
+            (Math.random() - 0.5) * 0.003
+        )
+    )
+    for (let i = 0; i < count; i++) {
+        positions[i * 3] = (Math.random() - 0.5) * 0.02
+        positions[i * 3 + 2] = (Math.random() - 0.5) * 0.02
     }
-
-    /**
-     * Detect which axis the model's longest dimension aligns with.
-     * The tallest axis is assumed to be the nose-to-tail direction.
-     */
-    _detectNoseAxis(model) {
-        const box = new THREE.Box3().setFromObject(model)
-        const size = new THREE.Vector3()
-        box.getSize(size)
-        console.log(`[ArtemisII] model size: x=${size.x.toFixed(2)} y=${size.y.toFixed(2)} z=${size.z.toFixed(2)}`)
-
-        // The longest axis is the rocket's main axis.
-        // We also check the bounding box center to determine which end is "up".
-        if (size.y >= size.x && size.y >= size.z) return 'posY'
-        if (size.z >= size.x && size.z >= size.y) return 'posZ'
-        return 'posX'
+    const geo = new THREE.BufferGeometry()
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3))
+    const mat = new THREE.PointsMaterial({
+        color, size: 0.016, transparent: true, opacity: 0.88,
+        blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true,
+    })
+    const points = new THREE.Points(geo, mat)
+    points.visible = false
+    scene.add(points)
+    return {
+        points,
+        show() { points.visible = true  },
+        hide() { points.visible = false },
+        update(origin) {
+            for (let i = 0; i < count; i++) {
+                positions[i * 3] += velocities[i].x
+                positions[i * 3 + 1] += velocities[i].y
+                positions[i * 3 + 2] += velocities[i].z
+                if (positions[i * 3 + 1] - origin.y < -0.4) {
+                    positions[i * 3] = origin.x + (Math.random() - 0.5) * 0.015
+                    positions[i * 3 + 1] = origin.y
+                    positions[i * 3 + 2] = origin.z + (Math.random() - 0.5) * 0.015
+                    velocities[i].set(
+                        (Math.random() - 0.5) * 0.003,
+                        -(Math.random() * 0.012 + 0.003),
+                        (Math.random() - 0.5) * 0.003
+                    )
+                }
+            }
+            geo.attributes.position.needsUpdate = true
+        },
+        dispose() { scene.remove(points); geo.dispose(); mat.dispose() }
     }
+}
 
-    /**
-     * Rotate the model inside orientNode so its nose points toward local +Y.
-     */
-    _applyAxisCorrection(model, axis) {
-        switch (axis) {
-            case 'posY': model.rotation.set(0, 0, 0);                   break  // already correct
-            case 'negY': model.rotation.set(Math.PI, 0, 0);             break
-            case 'posZ': model.rotation.set(-Math.PI / 2, 0, 0);        break
-            case 'negZ': model.rotation.set( Math.PI / 2, 0, 0);        break
-            case 'posX': model.rotation.set(0, 0, -Math.PI / 2);        break
-            case 'negX': model.rotation.set(0, 0,  Math.PI / 2);        break
-            default:     model.rotation.set(-Math.PI / 2, 0, 0);        break
+
+function buildFullTrajectory(scene) {
+    const MX = MOON_ORBIT_R
+
+    // Curve A: launch → LEO → TLI
+
+    // The orbit LEO is approximated with 8 points on the circumference of radius LEO_R.
+    const ptA = (angle) => new THREE.Vector3(
+        Math.sin(angle) * LEO_R,
+        Math.cos(angle) * LEO_R,
+        0
+    )
+    const waypointsA = [
+        // Launch: climbs vertically from the surface
+        new THREE.Vector3(0, EARTH_R, 0),
+        new THREE.Vector3(0, EARTH_R + 0.15, 0),
+        new THREE.Vector3(0, EARTH_R + 0.35, 0),
+        new THREE.Vector3(0, LEO_R, 0),   // LEO north — angle 0°
+
+        // Parking orbit: travels through the hole LEO at constant radius, changing angle from 0 to 360°
+        ptA(Math.PI * 0.25), // 45°
+        ptA(Math.PI * 0.5), // 90° - LEO east
+        ptA(Math.PI * 0.75), // 135°
+        ptA(Math.PI), // 180° - LEO south
+        ptA(Math.PI * 1.25), // 225°
+        ptA(Math.PI * 1.5), // 270° - LEO west
+        ptA(Math.PI * 1.75), // 315°
+        new THREE.Vector3(0, LEO_R, 0), // 360° - returns to LEO north
+
+        // TLI: goes from LEO towards the Moon
+        new THREE.Vector3(0.3, LEO_R + 0.2,  0.1),
+        new THREE.Vector3(0.8, 2.0, 0.2),
+        new THREE.Vector3(1.6, 2.8, 0.2),
+        new THREE.Vector3(2.5, 2.8, 0.15),
+        new THREE.Vector3(3.2, 2.2, 0.1), // final TLI
+    ]
+
+    //  Curve B: coast → flyby → return → reentry → splashdown
+    // Starts from the last point of curve A (final TLI)
+    const waypointsB = [
+        // Coast: plane torwards the Moon
+        new THREE.Vector3(3.2, 2.2, 0.1),
+        new THREE.Vector3(MX - 0.8, 1.8, 0.05),
+        new THREE.Vector3(MX - 0.4, 1.0, 0.0),
+        new THREE.Vector3(MX - 0.2, 0.5, 0.0),
+
+        // Flyby: goes over the Moon
+        new THREE.Vector3(MX - 0.1, 0.38, 0.0),
+        new THREE.Vector3(MX, 0.36, 0.0),
+        new THREE.Vector3(MX + 0.15, 0.38, -0.08),
+        new THREE.Vector3(MX + 0.4, 0.5, -0.25),
+
+        // Return: goes back from the Moon towards Earth
+        new THREE.Vector3(MX + 0.3, -0.3, -0.4),
+        new THREE.Vector3(3.0, -1.2, -0.4),
+        new THREE.Vector3(2.0, -2.0, -0.3),
+        new THREE.Vector3(1.0, -2.2, -0.15),
+        new THREE.Vector3(0.3, -1.8, -0.05),
+
+        // Reentry: dives towards Earth
+        new THREE.Vector3(0.15, -(EARTH_R + 0.4), 0.03),
+        new THREE.Vector3(0.06, -(EARTH_R + 0.08), 0.01),
+
+        // Splashdown: final point in the ocean
+        new THREE.Vector3(0.05, -EARTH_R, 0.0),
+    ]
+
+    // Construct and draw curve A
+    const curveA = new THREE.CatmullRomCurve3(waypointsA)
+    const ptsA = curveA.getPoints(300)
+    const geoA = new THREE.BufferGeometry().setFromPoints(ptsA)
+
+    // Construct and draw curve B
+    const curveB = new THREE.CatmullRomCurve3(waypointsB)
+    const ptsB = curveB.getPoints(500)
+    const geoB = new THREE.BufferGeometry().setFromPoints(ptsB)
+
+    const mat = new THREE.LineDashedMaterial({
+        color: 0xc8a96e, dashSize: 0.1, gapSize: 0.07,
+        transparent: true, opacity: 0.45,
+    })
+
+    const lineA = new THREE.Line(geoA, mat.clone())
+    lineA.computeLineDistances()
+    scene.add(lineA)
+
+    const lineB = new THREE.Line(geoB, mat.clone())
+    lineB.computeLineDistances()
+    scene.add(lineB)
+
+    return {
+        curveA, curveB, lineA, lineB,
+        getPointA(t) { return curveA.getPoint(Math.max(0, Math.min(1, t))) },
+        getPointB(t) { return curveB.getPoint(Math.max(0, Math.min(1, t))) },
+        dispose() {
+            scene.remove(lineA); geoA.dispose()
+            scene.remove(lineB); geoB.dispose()
+            mat.dispose()
         }
     }
+}
 
-    /**
-     * Move the effectsNode (fire+smoke) to the engine nozzle.
-     * After correction, the nozzle is always at -Y of orientNode.
-     * We express the offset in scene units: NOZZLE_LOCAL_Y * MODEL_SCALE.
-     */
-    _repositionEffects(axis) {
-        const nozzleY = NOZZLE_LOCAL_Y * MODEL_SCALE
-        this.effectsNode.position.set(0, nozzleY, 0)
+
+// Principal clase
+export class ArtemisII {
+    constructor(solarSystem) {
+        this.solarSystem = solarSystem
+
+        this.scene = null
+        this.camera = null
+
+        // We reuse the objects of the solar system
+        this._earthMesh = null
+        this._moonMesh = null
+
+        this.spacecraft = null
+        this.plume = null
+        this.plume2 = null
+        this.trajectory = null
+        this.hud = null
+        this._lights = []
+
+        this._orbitAngle = 0
+        this.phaseIndex = 0
+        this.phaseFrame = 0
+        this.totalFrame = 0
+
+        this._camPos = new THREE.Vector3()
+        this._camTarget = new THREE.Vector3()
+
+        this._savedBackground = null
+        this._hiddenSceneObjects = []
     }
 
-    // ── Effects ───────────────────────────────
 
-    _buildEffects() {
-        const tl = new THREE.TextureLoader()
+    start(scene, camera) {
+        this.scene = scene
+        this.camera = camera
 
-        const fireMat = new THREE.SpriteMaterial({
-            map:         tl.load('/textures/fire.jpg'),
-            transparent: true,
-            depthWrite:  false,
-            blending:    THREE.AdditiveBlending
+        SimulationSettings.missionMode = true
+
+        // Ocult the control panel
+        const panel = document.querySelector('.sp-panel')
+        if (panel) panel.style.display = 'none'
+
+        // Ocult all the objects of the solar system
+        this._hiddenSceneObjects = []
+        scene.children.forEach(child => {
+            if (child.isLight) return
+            this._hiddenSceneObjects.push({ obj: child, wasVisible: child.visible })
+            child.visible = false
         })
-        this.fire = new THREE.Sprite(fireMat)
-        // Base scale in scene units — small since effectsNode is already at nozzle
-        this.fire.scale.set(0.15, 0.4, 1)
-        this.fire.position.set(0, -0.1, 0)  // tiny extra offset below nozzle
-        this.effectsNode.add(this.fire)
 
-        this.smokeMat = new THREE.SpriteMaterial({
-            map:         tl.load('/textures/smoke.png'),
-            transparent: true,
-            opacity:     0.5,
-            depthWrite:  false
+        // Black background
+        this._savedBackground = scene.background
+        scene.background = new THREE.Color(0x00000a)
+
+        // Ilumination
+        const sunLight = new THREE.DirectionalLight(0xfff4e0, 3.5)
+        sunLight.position.set(60, 20, 10)
+        scene.add(sunLight)
+        this._lights.push(sunLight)
+
+        const ambient = new THREE.AmbientLight(0x112244, 1.6)
+        scene.add(ambient)
+        this._lights.push(ambient)
+
+        // Rehuse the Earth from the solar system
+        const earthPlanet = this.solarSystem.objects.find(o => o.name === 'Earth')
+        if (earthPlanet) {
+            this._earthMesh = earthPlanet.mesh
+            this._savedEarthPivotPos = earthPlanet.pivot.position.clone()
+            earthPlanet.pivot.position.set(0, 0, 0)
+            earthPlanet.pivot.visible = true
+            earthPlanet.pivot.traverse(child => { child.visible = true })
+            this._earthPlanetRef = earthPlanet
+        }
+
+        // Rehuse the moon from the solar system
+        const moonSat = this.solarSystem.objects.find(o => o.name === 'Moon')
+        if (moonSat) {
+            this._moonSatRef = moonSat
+            this._moonOrigParent = moonSat.pivot.parent
+            scene.add(moonSat.pivot)
+            moonSat.pivot.position.copy(MOON_FIXED_POS)
+            moonSat.mesh.position.set(0, 0, 0)
+            moonSat.pivot.visible = true
+            moonSat.mesh.visible = true
+        }
+
+        // Fire plumes
+        this.plume = makePlume(scene, 0xff6600, 200)
+        this.plume2 = makePlume(scene, 0xffcc44, 90)
+
+        // Load the model
+        this.spacecraft = new THREE.Group()
+        scene.add(this.spacecraft)
+        loadArtemisModel().then(model => {
+            scene.remove(this.spacecraft)
+            this.spacecraft = model
+            scene.add(this.spacecraft)
         })
-        this.smokePool = []
-        this._fireOn   = true
+
+        // Trajectory curves
+        this.trajectory = buildFullTrajectory(scene)
+
+        // HUD
+        this.hud = new ArtemisHUD(() => window.dispatchEvent(new CustomEvent('artemis:stop')))
+        this.hud.show()
+
+        // Camera
+        this._camPos.set(0, 1.2, 3.2)
+        this._camTarget.set(0, 0, 0)
+        camera.position.copy(this._camPos)
+        camera.lookAt(this._camTarget)
+        if (camera._controls) {
+            camera._controls.target.set(0, 0, 0)
+            camera._controls.update()
+        }
+
+        // Reset the mission state
+        this._orbitAngle = 0
+        this.phaseIndex = 0
+        this.phaseFrame = 0
+        this.totalFrame = 0
+        this._missionEnded = false
+        this._applyPhase()
     }
 
-    _spawnSmoke() {
-        const s = new THREE.Sprite(this.smokeMat.clone())
-        s.scale.set(0.12, 0.12, 0.12)
-        s.position.set(
-            (Math.random() - 0.5) * 0.08,
-            -0.15,
-            (Math.random() - 0.5) * 0.08
-        )
-        this.effectsNode.add(s)
-        this.smokePool.push({ sprite: s, life: 1.0 })
+ 
+
+    end(scene) {
+        SimulationSettings.missionMode = false
+
+        const panel = document.querySelector('.sp-panel')
+        if (panel) panel.style.display = ''
+
+        // Restart Earth position
+        if (this._earthPlanetRef && this._savedEarthPivotPos) {
+            this._earthPlanetRef.pivot.position.copy(this._savedEarthPivotPos)
+        }
+
+        // Restart Moon position
+        if (this._moonSatRef && this._moonOrigParent) {
+            this._moonOrigParent.add(this._moonSatRef.pivot)
+            this._moonSatRef.pivot.position.set(0, 0, 0)
+        }
+
+        // Restart visibility of all the objects in the scene
+        this._hiddenSceneObjects.forEach(({ obj, wasVisible }) => {
+            obj.visible = wasVisible
+        })
+        this._hiddenSceneObjects = []
+
+        if (this._savedBackground) scene.background = this._savedBackground
+
+        this._lights.forEach(l => scene.remove(l))
+        this._lights = []
+
+        this.plume?.dispose()
+        this.plume2?.dispose()
+        this.trajectory?.dispose()
+
+        if (this.spacecraft) {
+            scene.remove(this.spacecraft)
+            this.spacecraft.traverse(c => {
+                if (c.isMesh) { c.geometry.dispose(); c.material.dispose() }
+            })
+            this.spacecraft = null
+        }
+
+        this.hud?.hide()
+        this.hud = null
     }
 
-    _updateSmoke() {
-        for (let i = this.smokePool.length - 1; i >= 0; i--) {
-            const p = this.smokePool[i]
-            p.life -= 0.018
-            p.sprite.position.y -= 0.012
-            p.sprite.material.opacity = Math.max(0, p.life * 0.45)
-            p.sprite.scale.multiplyScalar(1.012)
-            if (p.life <= 0) {
-                this.effectsNode.remove(p.sprite)
-                this.smokePool.splice(i, 1)
+    update() {
+        if (!this.scene || this._missionEnded) return
+
+        this.totalFrame++
+        this.phaseFrame++
+
+        const phase = PHASES[this.phaseIndex]
+        const t     = Math.min(this.phaseFrame / phase.duration, 1)
+
+        // Advance phase if time is up
+        if (this.phaseFrame >= phase.duration) {
+            if (this.phaseIndex < PHASES.length - 1) {
+                this.phaseIndex++
+                this.phaseFrame = 0
+                this._applyPhase()
+            } else {
+                // End of the mission
+                if (!this._missionEnded) {
+                    this._missionEnded = true
+                    setTimeout(() => {
+                        window.dispatchEvent(new CustomEvent('artemis:stop'))
+                    }, 1500)
+                }
+                return
             }
         }
-    }
 
-    _setFire(on) {
-        this._fireOn = on
-        this.fire.visible = on
-    }
+        // Earth rotation
+        if (this._earthMesh) this._earthMesh.rotation.y += 0.0005
 
-    _animateFire(sx = 0.15, sy = 0.4) {
-        if (!this._fireOn) return
-        const j = 1 + Math.sin(this.totalTick * 0.7) * 0.15
-        this.fire.scale.set(sx * j, sy * j, 1)
-        this.fire.position.x = (Math.random() - 0.5) * 0.015
-        this.fire.position.z = (Math.random() - 0.5) * 0.015
-    }
-
-    // ── Quaternion blend ──────────────────────
-
-    /**
-     * Start a smooth rotation toward a target direction.
-     * The target direction is computed NOW and stored as a quaternion.
-     * Phase handlers must call this at tick===1 (after position is set)
-     * OR we call it from _initPhase with a pre-computed direction.
-     */
-    _beginRotateTo(worldDir) {
-        this._quatFrom.copy(this.shipGroup.quaternion)
-        this._quatTo.copy(quatLookUp(worldDir))
-        this._quatBlendTick = 0
-    }
-
-    _tickQuatBlend() {
-        if (this._quatBlendTick >= QUAT_BLEND_TICKS) return
-        const t = easeInOutCubic(this._quatBlendTick / QUAT_BLEND_TICKS)
-        this.shipGroup.quaternion.slerpQuaternions(this._quatFrom, this._quatTo, t)
-    }
-
-    // ── Phase management ──────────────────────
-
-    _initPhase(name) {
-        // Save camera offset for blending
-        this._camOffsetFrom = CAM_RIGS[this.phase]?.offset.clone() ?? null
-        this._camBlendTick  = 0
-
-        this.phase          = name
-        this.tick           = 0
-        this._phaseStartPos = this.shipGroup.position.clone()
-
-        this._updateUI(name)
-        console.log(`[ArtemisII] → ${name}`)
-    }
-
-    _nextPhase() {
-        const idx = PHASE_ORDER.indexOf(this.phase)
-        if (idx < PHASE_ORDER.length - 1) {
-            this._initPhase(PHASE_ORDER[idx + 1])
-        } else {
-            this._missionComplete()
-        }
-    }
-
-    // ─────────────────────────────────────────────
-    //  Phase handlers
-    // ─────────────────────────────────────────────
-
-    _phase_launch() {
-        const t  = this.tick / PHASE_DURATION['launch']
-        const st = easeInOutCubic(t)
-
-        const ep = this._earthPos()
-        const er = this._earthRadius()
-
-        // Rise along the fixed launch direction (world +Y)
-        const radial   = this._launchDir            // (0,1,0)
-        const prograde = new THREE.Vector3(1, 0, 0)  // eastward for gravity turn
-
-        const alt   = THREE.MathUtils.lerp(er + 0.05, er + LEO_ALT, st)
-        const drift = st * st * 0.8   // horizontal drift, quadratic — slow at first
-
-        this.shipGroup.position
-            .copy(ep)
-            .addScaledVector(radial,   alt)
-            .addScaledVector(prograde, drift)
-
-        // Gradually tilt the nose from straight up toward prograde
-        // as altitude increases — classic gravity turn
-        const tiltFraction = st * st  // 0 at launch, 1 at LEO entry
-        const noseDir = radial.clone()
-            .lerp(prograde, tiltFraction * 0.55)
-            .normalize()
-
-        // On the very first tick, start the rotation blend toward noseDir.
-        // On subsequent ticks, track noseDir with a slow continuous slerp.
-        if (this.tick === 1) {
-            this._beginRotateTo(noseDir)
-        } else if (this._quatBlendTick >= QUAT_BLEND_TICKS) {
-            const targetQ = quatLookUp(noseDir)
-            this.shipGroup.quaternion.slerp(targetQ, 0.02)
+        // Phases logic
+        switch (phase.id) {
+            case 'launch': this._updateLaunch(t); break
+            case 'parking_orbit': this._updateParkingOrbit(t); break
+            case 'tli': this._updateTLI(t); break
+            case 'coast': this._updateCoast(t); break
+            case 'flyby': this._updateFlyby(t); break
+            case 'return': this._updateReturn(t); break
+            case 'reentry': this._updateReentry(t); break
+            case 'splashdown': this._updateSplashdown(t); break
         }
 
-        // Scale: rocket appears small far away, grows as camera zooms in.
-        // During launch the camera is relatively close, so keep scale ~1.
-        const visualScale = THREE.MathUtils.lerp(0.7, 1.0, st)
-        this.orientNode.scale.setScalar(visualScale)
+        this.hud?.update(PHASES[this.phaseIndex], t, this.phaseIndex, PHASES.length)
 
-        this._animateFire()
-        if (Math.random() < 0.65) this._spawnSmoke()
-        this._updateSmoke()
+        this.camera.position.lerp(this._camPos, CAM_LERP)
+        this.camera.lookAt(this._camTarget)
     }
 
-    _phase_earth_orbit() {
-        const t       = this.tick / PHASE_DURATION['earth-orbit']
-        const blendIn = smoothstep(Math.min(t / 0.25, 1))  // 25% blend-in
+    // Phase transition
+    _applyPhase() {
+        const id = PHASES[this.phaseIndex].id
+        const plumeOn = ['launch', 'tli', 'reentry'].includes(id)
+        plumeOn ? this.plume.show()  : this.plume.hide()
+        plumeOn ? this.plume2.show() : this.plume2.hide()
+    }
 
-        const ep = this._earthPos()
-        const er = this._earthRadius()
-        const r  = er + LEO_ALT
+    // Curve helpers
+    _curvePoint(phaseId, t) {
+        const { curve, range: [a, b] } = PHASE_CURVE[phaseId]
+        const globalT = a + (b - a) * this._ease(t)
+        return curve === 'A'
+            ? this.trajectory.getPointA(globalT)
+            : this.trajectory.getPointB(globalT)
+    }
 
-        // Orbit in XZ plane, starting near where the gravity turn left off
-        const baseAngle = 0.2
-        const angle = baseAngle + t * Math.PI * 4
+    _curvePointNext(phaseId, t, delta = 0.012) {
+        const { curve, range: [a, b] } = PHASE_CURVE[phaseId]
+        const globalT = Math.min(a + (b - a) * this._ease(t) + delta, 1)
+        return curve === 'A'
+            ? this.trajectory.getPointA(globalT)
+            : this.trajectory.getPointB(globalT)
+    }
 
-        const targetPos = new THREE.Vector3(
-            ep.x + Math.cos(angle) * r,
-            ep.y + Math.sin(angle) * 0.15,
-            ep.z + Math.sin(angle) * r
+    // Phase updates
+    _updateLaunch(t) {
+        const pt = this._curvePoint('launch', t)
+        const ptNext = this._curvePointNext('launch', t)
+
+        this.spacecraft.position.copy(pt)
+        this.spacecraft.lookAt(ptNext)
+
+        this.plume.update(pt)
+        this.plume2.update(pt)
+
+        this._camPos.set(0.3 + t * 0.1, EARTH_R + 0.04 + t * 0.5, 1.0 - t * 0.15)
+        this._camTarget.copy(pt)
+    }
+
+    _updateParkingOrbit(t) {
+        const pt = this._curvePoint('parking_orbit', t)
+        const ptNext = this._curvePointNext('parking_orbit', t)
+
+        this.spacecraft.position.copy(pt)
+        this.spacecraft.lookAt(ptNext)
+
+        const e = this._ease(Math.min(t * 2, 1))
+        this._camPos.set(
+            THREE.MathUtils.lerp(0.5, 0, e),
+            THREE.MathUtils.lerp(1.8, 3.0, e),
+            THREE.MathUtils.lerp(1.5, 3.2, e)
         )
-
-        this.shipGroup.position.lerpVectors(this._phaseStartPos, targetPos, blendIn)
-        if (blendIn >= 1) this.shipGroup.position.copy(targetPos)
-
-        // Tangent to the orbit circle
-        const tangent = new THREE.Vector3(
-            -Math.sin(angle),
-             0,
-             Math.cos(angle)
-        ).normalize()
-
-        if (this.tick === 1) this._beginRotateTo(tangent)
-        else if (this._quatBlendTick >= QUAT_BLEND_TICKS) {
-            this.shipGroup.quaternion.slerp(quatLookUp(tangent), 0.025)
-        }
-
-        this.orientNode.scale.setScalar(1)
-
-        this._setFire(t < 0.06)
-        if (t < 0.06) this._animateFire()
-        this._updateSmoke()
+        this._camTarget.set(0, 0, 0)
     }
 
-    _phase_tli() {
-        const t  = this.tick / PHASE_DURATION['tli']
-        const st = easeInOutCubic(t)
+    _updateTLI(t) {
+        const pt = this._curvePoint('tli', t)
+        const ptNext = this._curvePointNext('tli', t)
 
-        const ep = this._earthPos()
-        const mp = this._moonPos()
-        const mr = this._moonRadius()
+        this.spacecraft.position.copy(pt)
+        this.spacecraft.lookAt(ptNext)
 
-        const p0 = this._phaseStartPos.clone()
-        // Target: approach Moon from the direction we're coming from
-        const approachDir = p0.clone().sub(mp).normalize()
-        const p3 = mp.clone().addScaledVector(approachDir, mr + LUNAR_ALT)
+        this.plume.update(pt)
+        this.plume2.update(pt)
 
-        // Arc bulges away from Earth
-        const mid  = p0.clone().lerp(p3, 0.5)
-        const away = mid.clone().sub(ep).normalize().multiplyScalar(10)
-        const p1   = p0.clone().lerp(mid, 0.5).add(away)
-        const p2   = p3.clone().lerp(mid, 0.5).add(away)
+        const pull = THREE.MathUtils.lerp(2.5, 5.5, this._ease(t))
+        this._camPos.set(-pull * 0.25, pull * 0.35, pull * 0.8)
+        this._camTarget.set(0, 0, 0)
+    }
 
-        const pos = bezier3(p0, p1, p2, p3, st)
-        this.shipGroup.position.copy(pos)
+    _updateCoast(t) {
+        const pt = this._curvePoint('coast', t)
+        const ptNext = this._curvePointNext('coast', t)
 
-        if (st < 0.995) {
-            const ahead   = bezier3(p0, p1, p2, p3, Math.min(st + 0.006, 1))
-            const tangent = ahead.clone().sub(pos).normalize()
-            if (this.tick === 1) this._beginRotateTo(tangent)
-            else if (this._quatBlendTick >= QUAT_BLEND_TICKS) {
-                this.shipGroup.quaternion.slerp(quatLookUp(tangent), 0.03)
+        this.spacecraft.position.copy(pt)
+        this.spacecraft.lookAt(ptNext)
+        this.spacecraft.rotateZ(0.002)
+
+        this._camPos.set(-4, 3, 5.5)
+        this._camTarget.set(0, 0, 0)
+    }
+
+    _updateFlyby(t) {
+        const pt = this._curvePoint('flyby', t)
+        const ptNext = this._curvePointNext('flyby', t)
+
+        this.spacecraft.position.copy(pt)
+        this.spacecraft.lookAt(ptNext)
+
+        const moonPos = MOON_FIXED_POS
+        const toMoon = moonPos.clone().sub(pt).normalize()
+        const offset = toMoon.clone().multiplyScalar(-0.5)
+        offset.y += 0.15
+
+        this._camPos.copy(pt).add(offset)
+        this._camTarget.copy(moonPos)
+    }
+
+    _updateReturn(t) {
+        const pt = this._curvePoint('return', t)
+        const ptNext = this._curvePointNext('return', t)
+
+        this.spacecraft.position.copy(pt)
+        this.spacecraft.lookAt(ptNext)
+        this.spacecraft.rotateZ(0.002)
+
+        this._camPos.set(4.5, 3.5, -3)
+        this._camTarget.set(0, 0, 0)
+    }
+
+    _updateReentry(t) {
+        const pt = this._curvePoint('reentry', t)
+
+        this.spacecraft.position.copy(pt)
+        this.spacecraft.lookAt(new THREE.Vector3(0, 0, 0))
+
+        this.plume.update(pt)
+        this.plume2.update(pt)
+
+        const intensity = Math.sin(t * Math.PI) * 1.8
+        this.spacecraft.traverse(child => {
+            if (child.isMesh && child.material?.emissive) {
+                child.material.emissive.setRGB(intensity * 0.9, intensity * 0.18, 0)
+                child.material.emissiveIntensity = intensity
             }
-        }
-
-        this.orientNode.scale.setScalar(1)
-        this._setFire(t < 0.18)
-        if (t < 0.18) this._animateFire(0.2, 0.6)
-    }
-
-    _phase_lunar_orbit() {
-        const t       = this.tick / PHASE_DURATION['lunar-orbit']
-        const blendIn = smoothstep(Math.min(t / 0.20, 1))
-
-        const mp = this._moonPos()
-        const mr = this._moonRadius()
-        const r  = mr + LUNAR_ALT
-
-        const angle = t * Math.PI * 4
-
-        const targetPos = new THREE.Vector3(
-            mp.x + Math.cos(angle) * r,
-            mp.y + Math.sin(angle) * 0.1,
-            mp.z + Math.sin(angle) * r
-        )
-
-        this.shipGroup.position.lerpVectors(this._phaseStartPos, targetPos, blendIn)
-        if (blendIn >= 1) this.shipGroup.position.copy(targetPos)
-
-        const tangent = new THREE.Vector3(-Math.sin(angle), 0, Math.cos(angle)).normalize()
-        if (this.tick === 1) this._beginRotateTo(tangent)
-        else if (this._quatBlendTick >= QUAT_BLEND_TICKS) {
-            this.shipGroup.quaternion.slerp(quatLookUp(tangent), 0.025)
-        }
-
-        this.orientNode.scale.setScalar(1)
-        this._setFire(false)
-        this._updateSmoke()
-    }
-
-    _phase_return() {
-        const t  = this.tick / PHASE_DURATION['return']
-        const st = easeInOutCubic(t)
-
-        const ep = this._earthPos()
-        const er = this._earthRadius()
-
-        const p0 = this._phaseStartPos.clone()
-        // End point: just above Earth atmosphere, NOT inside the planet
-        const approachDir = p0.clone().sub(ep).normalize()
-        const p3 = ep.clone().addScaledVector(approachDir, er + 0.38)
-
-        const mid = p0.clone().lerp(p3, 0.5)
-        const dip = new THREE.Vector3(0, -5, 0)
-        const p1  = p0.clone().lerp(mid, 0.45).add(dip.clone().multiplyScalar(0.4))
-        const p2  = p3.clone().lerp(mid, 0.45).add(dip.clone().multiplyScalar(0.4))
-
-        const pos = bezier3(p0, p1, p2, p3, st)
-        this.shipGroup.position.copy(pos)
-
-        if (st < 0.995) {
-            const ahead   = bezier3(p0, p1, p2, p3, Math.min(st + 0.006, 1))
-            const tangent = ahead.clone().sub(pos).normalize()
-            if (this.tick === 1) this._beginRotateTo(tangent)
-            else if (this._quatBlendTick >= QUAT_BLEND_TICKS) {
-                this.shipGroup.quaternion.slerp(quatLookUp(tangent), 0.03)
-            }
-        }
-
-        this.orientNode.scale.setScalar(1)
-        this._setFire(t < 0.14)
-        if (t < 0.14) this._animateFire(0.2, 0.55)
-    }
-
-    _phase_splashdown() {
-        const t  = this.tick / PHASE_DURATION['splashdown']
-        const st = easeInOutCubic(t)
-
-        const ep  = this._earthPos()
-        const er  = this._earthRadius()
-
-        // Radial direction from Earth centre toward where return phase ended
-        const radial = this._phaseStartPos.clone().sub(ep).normalize()
-
-        // Exponential deceleration (parachute)
-        const altStart  = er + 0.38
-        const altEnd    = er + 0.01
-        const altFactor = 1 - Math.pow(st, 0.35)
-        const alt       = altEnd + (altStart - altEnd) * altFactor
-
-        // Pendulum sway, fading to zero at landing
-        const swayAmp = 0.10 * (1 - st)
-        const swayA   = Math.sin(t * Math.PI * 8) * swayAmp
-        const swayB   = Math.cos(t * Math.PI * 5) * swayAmp * 0.6
-
-        const right   = new THREE.Vector3().crossVectors(radial, new THREE.Vector3(0, 0, 1)).normalize()
-        const forward = new THREE.Vector3().crossVectors(right, radial).normalize()
-
-        this.shipGroup.position
-            .copy(ep)
-            .addScaledVector(radial,   alt)
-            .addScaledVector(right,    swayA)
-            .addScaledVector(forward,  swayB)
-
-        // Nose points toward Earth during re-entry (heat shield forward)
-        const noseDown = radial.clone().negate()
-        if (this.tick === 1) this._beginRotateTo(noseDown)
-        else if (this._quatBlendTick >= QUAT_BLEND_TICKS) {
-            this.shipGroup.quaternion.slerp(quatLookUp(noseDown), 0.04)
-        }
-
-        // Rocket appears to grow as camera zooms in during descent
-        const visualScale = THREE.MathUtils.lerp(1.0, 1.6, st)
-        this.orientNode.scale.setScalar(visualScale)
-
-        // Re-entry heating: peaks at 30%, fades after
-        const heat = t < 0.3
-            ? smoothstep(t / 0.3)
-            : smoothstep(1 - (t - 0.3) / 0.7)
-
-        this._setFire(heat > 0.05)
-        if (this._fireOn) {
-            // Fire spreads around capsule during heating, shrinks as it cools
-            this._animateFire(0.3 + heat * 0.5, 0.2 + heat * 0.4)
-            this.fire.position.set(0, heat * 0.1, 0)  // shifts upward as it wraps
-        }
-    }
-
-    // ── Camera ────────────────────────────────
-
-    _updateCamera() {
-        const rig    = CAM_RIGS[this.phase]
-        const target = this.shipGroup.position.clone()
-
-        let offset = rig.offset.clone()
-        if (this._camOffsetFrom && this._camBlendTick < CAM_BLEND_TICKS) {
-            const blend = easeInOutCubic(this._camBlendTick / CAM_BLEND_TICKS)
-            offset = this._camOffsetFrom.clone().lerp(rig.offset, blend)
-        }
-
-        this.camera.position.lerp(target.clone().add(offset), rig.lerpSpeed)
-        this.camera.lookAt(target)
-    }
-
-    // ── World-space helpers ────────────────────
-
-    _earthPos()    { const v = new THREE.Vector3(); this.earth.mesh.getWorldPosition(v); return v }
-    _moonPos()     { const v = new THREE.Vector3(); this.moon.mesh.getWorldPosition(v);  return v }
-    _earthRadius() { return this.earth.mesh.geometry.parameters.radius ?? 1 }
-    _moonRadius()  { return this.moon.mesh.geometry.parameters.radius  ?? 0.27 }
-
-    // ── Mission complete ───────────────────────
-
-    _missionComplete() {
-        console.log('[ArtemisII] 🎉 Mission complete!')
-        if (this._uiLabel) this._uiLabel.textContent = '✅  Artemis II – Mission Complete'
-        setTimeout(() => { if (this.shipGroup) this.end() }, 4000)
-    }
-
-    // ── HUD ───────────────────────────────────
-
-    _buildUI() {
-        const hud = document.createElement('div')
-        hud.id = 'artemis-hud'
-        Object.assign(hud.style, {
-            position:      'absolute',
-            top:           '20px',
-            left:          '50%',
-            transform:     'translateX(-50%)',
-            padding:       '10px 26px',
-            background:    'rgba(0,0,0,0.65)',
-            border:        '1px solid rgba(255,255,255,0.15)',
-            borderRadius:  '30px',
-            color:         '#fff',
-            fontFamily:    'Arial, sans-serif',
-            fontSize:      '15px',
-            fontWeight:    'bold',
-            letterSpacing: '0.03em',
-            pointerEvents: 'none',
-            zIndex:        '999'
         })
-        this._uiLabel = document.createElement('span')
-        hud.appendChild(this._uiLabel)
-        document.body.appendChild(hud)
-        this._hud = hud
+
+        const away = pt.clone().normalize().negate().multiplyScalar(0.25).add(pt)
+        away.y += 0.08
+        this._camPos.copy(away)
+        this._camTarget.set(0, 0, 0)
     }
 
-    _updateUI(phase) {
-        if (this._uiLabel) this._uiLabel.textContent = PHASE_LABELS[phase] ?? phase
+    _updateSplashdown(t) {
+        const pt = this._curvePoint('splashdown', t)
+        this.spacecraft.position.copy(pt)
+        this.spacecraft.lookAt(new THREE.Vector3(0, 0, 0))
+
+        this.spacecraft.traverse(child => {
+            if (child.isMesh && child.material?.emissive) {
+                child.material.emissive.setScalar(0)
+                child.material.emissiveIntensity = 0
+            }
+        })
+
+        this.spacecraft.position.y += Math.sin(this.totalFrame * 0.04) * 0.003
+
+        const angle = this.totalFrame * 0.005
+        const base = pt.clone().normalize().multiplyScalar(EARTH_R + 0.015)
+        this._camPos.set(
+            base.x + Math.cos(angle) * 0.22,
+            base.y + 0.12,
+            base.z + Math.sin(angle) * 0.22
+        )
+        this._camTarget.copy(base)
     }
 
-    _removeUI() {
-        this._hud?.remove()
-        this._hud = this._uiLabel = null
+    // Easing function for smoother transitions
+    _ease(t) {
+        return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t
     }
 }

@@ -71,6 +71,10 @@ export function createRenderer() {
   const renderer = new THREE.WebGLRenderer({ antialias: true })
   renderer.setSize(window.innerWidth, window.innerHeight)
 
+  // Use ACES Filmic tone mapping for better color grading and dynamic range
+  renderer.toneMapping = THREE.ACESFilmicToneMapping
+  renderer.toneMappingExposure = 0.5
+
   // Better visuals
   renderer.setPixelRatio(window.devicePixelRatio)
 
@@ -111,8 +115,20 @@ export const ARTIFICIAL_SATELLITES = {
             type: 'orbit',
             size: 0.01,
             distance: 2.2,
-            orbitSpeed: 0.05,
-            inclination: 0.51
+            orbitSpeed: 0.03,
+            inclination: 0.51,
+            info: {
+                title: 'ISS (International Space Station)',
+                description: 'A modular space station in low Earth orbit, serving as a microgravity laboratory for scientific research and international cooperation.',
+                details: [
+                    'Altitude: ~400 km',
+                    'Speed: 28,000 km/h',
+                    'Orbit period: ~90 minutes',
+                    'Crew: 7 astronauts',
+                    'Agencies: NASA, Roscosmos, ESA, JAXA, CSA'
+                ],
+                image: '/images/iss.jpg'
+            }
         },
         {
             name: 'Hubble',
@@ -120,8 +136,20 @@ export const ARTIFICIAL_SATELLITES = {
             type: 'orbit',
             size: 0.001,
             distance: 2.4,
-            orbitSpeed: 0.04,
-            inclination: 0.49
+            orbitSpeed: 0.02,
+            inclination: 0.49,
+            info: {
+                title: 'Hubble Space Telescope',
+                description: 'A space telescope that has provided some of the most detailed visible-light images, helping to revolutionize astronomy.',
+                details: [
+                    'Launched: 1990',
+                    'Altitude: ~540 km',
+                    'Orbit period: ~95 minutes',
+                    'Operated by: NASA / ESA',
+                    'Key discoveries: Deep Field, expanding universe'
+                ],
+                image: '/images/hubble.jpeg'
+            }
         },
         {
             name: 'Voyager 1',
@@ -129,7 +157,19 @@ export const ARTIFICIAL_SATELLITES = {
             type: 'escape',
             size: 0.1,
             distance: 65,
-            orbitSpeed: 0.0003
+            orbitSpeed: 0.0003,
+            info: {
+                title: 'Voyager 1',
+                description: 'The farthest human-made object from Earth, currently traveling through interstellar space.',
+                details: [
+                    'Launched: 1977',
+                    'Status: Active',
+                    'Distance: ~24+ billion km from Earth',
+                    'Speed: ~61,000 km/h',
+                    'Mission: Study outer planets and interstellar space'
+                ],
+                image: '/images/voyager.jpg'
+            }
         },
         {
             name: 'Parker Solar Probe',
@@ -139,7 +179,19 @@ export const ARTIFICIAL_SATELLITES = {
             distance: 3.5,
             orbitSpeed: 0.02,
             inclination: 0.3,
-            eccentricity: 0.3, 
+            eccentricity: 0.3,
+            info: {
+                title: 'Parker Solar Probe',
+                description: 'A NASA mission that travels closer to the Sun than any spacecraft in history to study the solar corona.',
+                details: [
+                    'Launched: 2018',
+                    'Closest approach: ~6 million km to Sun',
+                    'Top speed: ~700,000 km/h',
+                    'Mission: Study solar wind and corona',
+                    'Heat shield: withstands 1300°C'
+                ],
+                image: '/images/parker.png'
+            }
         },
         {
             name: 'James Webb',
@@ -147,7 +199,19 @@ export const ARTIFICIAL_SATELLITES = {
             type: 'lagrange',
             size: 0.02,
             distance: 7,
-            orbitSpeed: 0.01
+            orbitSpeed: 0.01,
+            info: {
+                title: 'James Webb Space Telescope (JWST)',
+                description: 'The most powerful space telescope ever built, observing the universe in infrared from the Sun–Earth L2 point.',
+                details: [
+                    'Launched: 2021',
+                    'Location: Sun–Earth L2 (~1.5 million km)',
+                    'Wavelength: Infrared',
+                    'Mission: Early universe, exoplanets',
+                    'Mirror diameter: 6.5 meters'
+                ],
+                image: '/images/james.png'
+            }
         }
     ]
 }===== data/planets.js =====
@@ -164,6 +228,7 @@ export const PLANETS = [
       eccentricity: 0.21,
       texture: '/textures/mercury.png',
       info: {
+        sunDistance: '57.9 million km',
         radius: '2,439 km',
         day: '58.6 Earth days',
         year: '88 days',
@@ -181,6 +246,7 @@ export const PLANETS = [
       eccentricity: 0.007,
       texture: '/textures/venus.jpg',
       info: {
+        sunDistance: '108.2 million km',
         radius: '6,052 km',
         day: '243 Earth days',
         year: '225 days',
@@ -198,6 +264,7 @@ export const PLANETS = [
       eccentricity: 0.017,
       texture: '/textures/earth.jpg',
       info: {
+        sunDistance: '149.6 million km',
         radius: '6,371 km',
         day: '24 hours',
         year: '365 days',
@@ -215,6 +282,7 @@ export const PLANETS = [
       eccentricity: 0.094,
       texture: '/textures/mars.jpeg',
       info: {
+        sunDistance: '227.9 million km',
         radius: '3,390 km',
         day: '24.6 hours',
         year: '687 days',
@@ -232,6 +300,7 @@ export const PLANETS = [
       eccentricity: 0.049,
       texture: '/textures/jupiter.jpg',
       info: {
+        sunDistance: '778.5 million km',
         radius: '69,911 km',
         day: '10 hours',
         year: '12 years',
@@ -249,6 +318,7 @@ export const PLANETS = [
       eccentricity: 0.056,
       texture: '/textures/saturn.jpg',
       info: {
+        sunDistance: '1.4 billion km',
         radius: '58,232 km',
         day: '10.7 hours',
         year: '29 years',
@@ -266,6 +336,7 @@ export const PLANETS = [
       eccentricity: 0.047,
       texture: '/textures/uranus.jpeg',
       info: {
+        sunDistance: '2.9 billion km',
         radius: '25,362 km',
         day: '17 hours',
         year: '84 years',
@@ -283,6 +354,7 @@ export const PLANETS = [
       eccentricity: 0.009,
       texture: '/textures/neptune.jpeg',
       info: {
+        sunDistance: '4.5 billion km',
         radius: '24,622 km',
         day: '16 hours',
         year: '165 years',
@@ -429,6 +501,7 @@ import { createControls } from './controls/controls.js'
 import { SolarSystem } from './systems/solarSystem.js'
 import { CameraController } from './systems/cameraController.js'
 import { ControlsPanel } from './ui/controlsPanel.js'
+import { SimulationSettings } from './systems/simulationSettings.js'
 
 import { MissionSystem } from './systems/missionSystem.js'
 import { ArtemisII } from './missions/artemisII.js'
@@ -436,7 +509,6 @@ import { ArtemisII } from './missions/artemisII.js'
 const scene = createScene()
 const camera = createCamera()
 const renderer = createRenderer()
-
 const loop = createLoop(renderer, scene, camera)
 
 // Add UI controls panel
@@ -458,8 +530,21 @@ solarSystem.cameraController = cameraController
 loop.add(solarSystem)
 
 // Add ambient light for basic illumination
-const ambientLight = new THREE.AmbientLight(0xffffff, 3)
+const ambientLight = new THREE.AmbientLight(0xffffff, SimulationSettings.ambientIntensity)
 scene.add(ambientLight)
+loop.add({
+  update: () => {
+      ambientLight.intensity = SimulationSettings.ambientIntensity
+  }
+})
+
+// Pass satellite data to the controls panel
+controlsPanel.setSatellites(
+  solarSystem.artificialSatellites,
+  (sat) => {
+      solarSystem.onSatelliteSelect(sat)
+  }
+)
 
 // Mission system
 const missionSystem = new MissionSystem(scene, camera)
@@ -468,224 +553,690 @@ loop.add(missionSystem)
 const artemis = new ArtemisII(solarSystem)
 
 document.getElementById('start-artemis').onclick = () => {
-    missionSystem.start(artemis)
+  cameraController.isMoving    = false
+  cameraController.followTarget = null
+  controls.enabled = false
+  missionSystem.start(artemis)
 }
 
 document.getElementById('stop-mission').onclick = () => {
-    missionSystem.stop()
+  missionSystem.stop()
+  cameraController.resetView()
 }
+
+window.addEventListener('artemis:stop', () => {
+  missionSystem.stop()
+  // Reset OrbitControls target back to solar system origin and restore view
+  controls.target.set(0, 0, 0)
+  controls.enabled = true
+  cameraController.resetView()
+})
 
 // Start the app
 loop.start()===== missions/artemisII.js =====
+// src/missions/artemisII.js
+// Artemis II — Crewed lunar flyby simulation
+//
+// FIX SUMMARY:
+//  - Reutiliza la Tierra y Luna ya existentes en la escena (no las recrea)
+//  - La Luna se queda estática en una posición fija (+X) durante toda la misión
+//  - La trayectoria cubre launch + parking orbit + TLI + coast + flyby + return + reentry + splashdown
+//    como una sola curva continua; cada fase mueve el cohete por su segmento correspondiente
+//  - Splashdown: el cohete llega a la superficie, la cámara orbita 5s y luego la misión termina sola
+//  - Al relanzar la misión la cámara vuelve a posicionarse cerca (se resetea en start())
+
 import * as THREE from 'three'
-import { SimulationSettings } from '../systems/simulationSettings.js'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js'
+import { SimulationSettings } from '../systems/simulationSettings.js'
+import { ArtemisHUD } from '../ui/artemisHUD.js'
 
-export class ArtemisII {
+// ─── Constantes de escena (Earth-centred) ─────────────────────────────────────
+// Coinciden con los valores de satellites.js y planets.js
+const EARTH_R      = 1        // radio del mesh de la Tierra en la escena
+const MOON_ORBIT_R = 3.5      // distancia a la que ponemos la Luna estática
+const LEO_R        = EARTH_R + 0.55   // Low Earth Orbit
 
-    constructor(solarSystem) {
-        this.solarSystem = solarSystem
-    }
+// La Luna se fija en +X al inicio de la misión
+const MOON_FIXED_POS = new THREE.Vector3(MOON_ORBIT_R, 0, 0)
 
-    start(scene, camera) {
-        this.scene = scene
-        this.camera = camera
-        this.time = 0
-        SimulationSettings.missionMode = true
-        SimulationSettings.timeScale = 0.05
-        this.earth = this.solarSystem.objects.find(
-            obj => obj.name === 'Earth'
-        )
+const CAM_LERP = 0.028
 
-        // Parameters for the mission phases
-        this.phase = 'launch'
-        this.velocity = 0
-        this.acceleration = 0.00025
-        this.maxVelocity = 0.002
+// ─── Fases ────────────────────────────────────────────────────────────────────
+const PHASES = [
+    { id: 'launch',        label: 'LAUNCH',                  subtitle: 'SLS lifts off from LC-39B',               duration: 380 },
+    { id: 'parking_orbit', label: 'PARKING ORBIT',           subtitle: 'Crew confirms systems nominal',            duration: 300 },
+    { id: 'tli',           label: 'TRANS-LUNAR INJECTION',   subtitle: 'ICPS burns for 22 minutes',                duration: 360 },
+    { id: 'coast',         label: 'TRANSLUNAR COAST',        subtitle: '3 days, 18 hours to the Moon',             duration: 480 },
+    { id: 'flyby',         label: 'LUNAR FLYBY',             subtitle: 'Closest approach: 8,900 km',               duration: 400 },
+    { id: 'return',        label: 'FREE RETURN',             subtitle: "Moon's gravity slings Orion home",         duration: 360 },
+    { id: 'reentry',       label: 'RE-ENTRY',                subtitle: 'Orion hits atmosphere at 11 km/s',         duration: 300 },
+    { id: 'splashdown',    label: 'SPLASHDOWN',              subtitle: 'Pacific Ocean recovery — Mission Complete', duration: 300 },
+]
 
-        // Load the Artemis II model
+// Segmentos de cada fase sobre su curva correspondiente
+const PHASE_CURVE = {
+    launch:        { curve: 'A', range: [0.00, 0.30] },
+    parking_orbit: { curve: 'A', range: [0.30, 0.65] },
+    tli:           { curve: 'A', range: [0.65, 1.00] },
+    coast:         { curve: 'B', range: [0.00, 0.38] },
+    flyby:         { curve: 'B', range: [0.38, 0.52] },
+    return:        { curve: 'B', range: [0.52, 0.78] },
+    reentry:       { curve: 'B', range: [0.78, 0.93] },
+    splashdown:    { curve: 'B', range: [0.93, 1.00] },
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function loadArtemisModel() {
+    return new Promise((resolve) => {
         const loader = new GLTFLoader()
-        const draco = new DRACOLoader()
+        const draco  = new DRACOLoader()
         draco.setDecoderPath('/draco/')
         loader.setDRACOLoader(draco)
 
-        this.ship = new THREE.Object3D()
+        loader.load(
+            '/models/artemis.glb',
+            (gltf) => {
+                const model = gltf.scene
+                const box   = new THREE.Box3().setFromObject(model)
+                const size  = box.getSize(new THREE.Vector3()).length()
+                model.scale.setScalar(0.12 / size)
+                box.setFromObject(model)
+                model.position.sub(box.getCenter(new THREE.Vector3()))
+                model.traverse(c => { if (c.isMesh) { c.castShadow = true; c.receiveShadow = true } })
+                resolve(model)
+            },
+            undefined,
+            () => {
+                console.warn('[ArtemisII] artemis.glb no encontrado — usando placeholder')
+                const g = new THREE.Group()
+                g.add(new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.03, 0.035, 0.18, 16),
+                    new THREE.MeshStandardMaterial({ color: 0xc8b89a, metalness: 0.4, roughness: 0.5 })
+                ))
+                resolve(g)
+            }
+        )
+    })
+}
 
-        loader.load('/models/artemis.glb', (gltf) => {
-
-            this.model = gltf.scene
-
-            this.model.scale.set(0.02, 0.02, 0.02)
-
-            // Orientación vertical (muy importante)
-            this.model.rotation.x = Math.PI / 2
-
-            this.ship.add(this.model)
-        })
-
-        // Initial position just above Earth
-        this.ship.position.set(0, 1.2, 0)
-
-        // Add fire effect
-        const textureLoader = new THREE.TextureLoader()
-
-        this.fireTexture = textureLoader.load('/textures/fire.jpg')
-
-        const fireMaterial = new THREE.SpriteMaterial({
-            map: this.fireTexture,
-            transparent: true,
-            depthWrite: false
-        })
-
-        this.fire = new THREE.Sprite(fireMaterial)
-
-        // Scale to make it look like a flame
-        this.fire.scale.set(0.5, 1.5, 1)
-
-        // Position it at the base of the rocket
-        this.fire.position.set(0, -0.8, 0)
-
-        this.ship.add(this.fire)
-
-        // Smoke particles effect
-        this.smokeParticles = []
-
-        const smokeTexture = textureLoader.load('/textures/smoke.png')
-
-        this.smokeMaterial = new THREE.SpriteMaterial({
-            map: smokeTexture,
-            transparent: true,
-            opacity: 0.5,
-            depthWrite: false
-        })
-
-        this.earth.pivot.add(this.ship)
+function makePlume(scene, color = 0xff8c00, count = 200) {
+    const positions  = new Float32Array(count * 3)
+    const velocities = Array.from({ length: count }, () =>
+        new THREE.Vector3(
+            (Math.random() - 0.5) * 0.003,
+            -(Math.random() * 0.014 + 0.004),
+            (Math.random() - 0.5) * 0.003
+        )
+    )
+    for (let i = 0; i < count; i++) {
+        positions[i * 3]     = (Math.random() - 0.5) * 0.02
+        positions[i * 3 + 2] = (Math.random() - 0.5) * 0.02
     }
-
-    update() {
-
-        this.time += 0.01
-    
-        // Phase 1: Launch
-        if (this.phase === 'launch') {
-
-            // Progressive acceleration
-            this.velocity += this.acceleration
-        
-            // Limit max velocity
-            if (this.velocity > this.maxVelocity) {
-                this.velocity = this.maxVelocity
-            }
-        
-            // Vertical movement
-            this.ship.position.y += this.velocity
-        
-            // Gravity turn
-            const tiltStart = 1.5
-            const tiltEnd = 6
-        
-            if (this.ship.position.y > tiltStart) {
-                const t = Math.min(
-                    (this.ship.position.y - tiltStart) / (tiltEnd - tiltStart),
-                    1
-                )
-        
-                this.ship.rotation.z = -t * 0.5
-            }
-        
-            // Small drift to simulate atmospheric effects
-            const drift = this.velocity * 0.3
-            this.ship.position.x += drift
-        
-            // Transition to orbit phase
-            if (this.ship.position.y > 2) {
-                this.phase = 'orbit'
-                this.orbitAngle = 0
-            }
-
-            // Flame animation
-            const scale = 1 + Math.sin(this.time * 20) * 0.2
-            this.fire.scale.set(0.5 * scale, 1.5 * scale, 1)
-
-            // Slight random movement to make it look more dynamic
-            this.fire.position.x = (Math.random() - 0.5) * 0.05
-            this.fire.position.z = (Math.random() - 0.5) * 0.05
-
-            // Generate smoke particles with a certain probability
-            if (Math.random() < 0.6) {
-
-                const smoke = new THREE.Sprite(this.smokeMaterial.clone())
-
-                smoke.scale.set(0.5, 0.5, 0.5)
-
-                // Position it at the base of the rocket with some random offset
-                smoke.position.set(
-                    (Math.random() - 0.5) * 0.3,
-                    -1,
-                    (Math.random() - 0.5) * 0.3
-                )
-
-                this.ship.add(smoke)
-
-                this.smokeParticles.push({
-                    sprite: smoke,
-                    life: 1
-                })
-            }
-
-            // Update smoke particles
-            this.smokeParticles.forEach((p, i) => {
-
-                p.life -= 0.01
-
-                p.sprite.position.y -= 0.02
-
-                p.sprite.material.opacity = p.life
-
-                p.sprite.scale.multiplyScalar(1.01)
-
-                if (p.life <= 0) {
-                    this.ship.remove(p.sprite)
-                    this.smokeParticles.splice(i, 1)
+    const geo = new THREE.BufferGeometry()
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3))
+    const mat = new THREE.PointsMaterial({
+        color, size: 0.016, transparent: true, opacity: 0.88,
+        blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true,
+    })
+    const points = new THREE.Points(geo, mat)
+    points.visible = false
+    scene.add(points)
+    return {
+        points,
+        show()  { points.visible = true  },
+        hide()  { points.visible = false },
+        update(origin) {
+            for (let i = 0; i < count; i++) {
+                positions[i * 3]     += velocities[i].x
+                positions[i * 3 + 1] += velocities[i].y
+                positions[i * 3 + 2] += velocities[i].z
+                if (positions[i * 3 + 1] - origin.y < -0.4) {
+                    positions[i * 3]     = origin.x + (Math.random() - 0.5) * 0.015
+                    positions[i * 3 + 1] = origin.y
+                    positions[i * 3 + 2] = origin.z + (Math.random() - 0.5) * 0.015
+                    velocities[i].set(
+                        (Math.random() - 0.5) * 0.003,
+                        -(Math.random() * 0.012 + 0.003),
+                        (Math.random() - 0.5) * 0.003
+                    )
                 }
-            })
-        }
-
-        // Phase 2: Orbit
-        if (this.phase === 'orbit') {
-
-            this.orbitAngle += 0.02
-    
-            const r = 5
-    
-            const x = Math.cos(this.orbitAngle) * r
-            const z = Math.sin(this.orbitAngle) * r
-    
-            this.ship.position.set(x, 0, z)
-    
-            this.ship.lookAt(0, 0, 0)
-        }
-
-        // Camera follows the ship
-        const target = new THREE.Vector3()
-        this.ship.getWorldPosition(target)
-
-        const camPos = target.clone().add(new THREE.Vector3(2, 2, 2))
-
-        this.camera.position.lerp(camPos, 0.05)
-        this.camera.lookAt(target)
+            }
+            geo.attributes.position.needsUpdate = true
+        },
+        dispose() { scene.remove(points); geo.dispose(); mat.dispose() }
     }
+}
+
+// ─── Construcción de trayectoria ──────────────────────────────────────────────
+//
+// Estrategia: dos curvas separadas + garantía matemática de distancia mínima.
+//
+//  curveA — launch + parking_orbit + TLI  (puntos siempre a >= LEO_R del origen)
+//  curveB — coast + flyby + return + reentry + splashdown
+//           (empieza LEJOS de la Tierra, nunca vuelve a estar cerca hasta reentry)
+//
+// Los segmentos de fase se mapean así:
+//   launch        → curveA  [0.00, 0.30]
+//   parking_orbit → curveA  [0.30, 0.65]
+//   tli           → curveA  [0.65, 1.00]
+//   coast         → curveB  [0.00, 0.38]
+//   flyby         → curveB  [0.38, 0.52]
+//   return        → curveB  [0.52, 0.78]
+//   reentry       → curveB  [0.78, 0.93]
+//   splashdown    → curveB  [0.93, 1.00]
+
+
+function buildFullTrajectory(scene) {
+    const MX = MOON_ORBIT_R
+
+    // ── Curva A: launch → LEO → TLI ──────────────────────────────────────────
+    // Todos los puntos están a distancia >= LEO_R del origen → nunca pasan
+    // por dentro de la Tierra.
+    // La órbita LEO se aproxima con 8 puntos en la circunferencia de radio LEO_R.
+    const ptA = (angle) => new THREE.Vector3(
+        Math.sin(angle) * LEO_R,
+        Math.cos(angle) * LEO_R,
+        0
+    )
+    const waypointsA = [
+        // Lanzamiento: sube verticalmente desde la superficie
+        new THREE.Vector3(0,  EARTH_R,        0),
+        new THREE.Vector3(0,  EARTH_R + 0.15, 0),
+        new THREE.Vector3(0,  EARTH_R + 0.35, 0),
+        new THREE.Vector3(0,  LEO_R,          0),   // LEO norte — ángulo 0°
+
+        // Parking orbit: recorre la circunferencia LEO completa (360°)
+        ptA(Math.PI * 0.25),   //  45°
+        ptA(Math.PI * 0.5),    //  90° — LEO este
+        ptA(Math.PI * 0.75),   // 135°
+        ptA(Math.PI),          // 180° — LEO sur
+        ptA(Math.PI * 1.25),   // 225°
+        ptA(Math.PI * 1.5),    // 270° — LEO oeste
+        ptA(Math.PI * 1.75),   // 315°
+        new THREE.Vector3(0,   LEO_R,          0),  // 360° = vuelve al norte
+
+        // TLI: sale desde LEO norte hacia la Luna (siempre en Y positiva al principio)
+        new THREE.Vector3(0.3,  LEO_R + 0.2,  0.1),
+        new THREE.Vector3(0.8,  2.0,           0.2),
+        new THREE.Vector3(1.6,  2.8,           0.2),
+        new THREE.Vector3(2.5,  2.8,           0.15),
+        new THREE.Vector3(3.2,  2.2,           0.1),   // final TLI — alejado, Y>0
+    ]
+
+    // ── Curva B: coast → flyby → return → reentry → splashdown ───────────────
+    // Empieza donde termina el TLI y nunca se acerca a la Tierra hasta reentry.
+    const waypointsB = [
+        // Coast: planeo desde el final del TLI hacia la Luna
+        // TODOS los puntos tienen distancia al origen > 1.5 → nunca tocan la Tierra
+        new THREE.Vector3( 3.2,       2.2,    0.1),    // mismo que el final de A
+        new THREE.Vector3( MX - 0.8,  1.8,    0.05),
+        new THREE.Vector3( MX - 0.4,  1.0,    0.0),
+        new THREE.Vector3( MX - 0.2,  0.5,    0.0),
+
+        // Flyby: pasa por encima de la Luna (Y mínima = 0.35 > MOON_R = 0.27)
+        new THREE.Vector3( MX - 0.1,  0.38,   0.0),
+        new THREE.Vector3( MX,        0.36,   0.0),    // perilune — rozando la Luna por encima
+        new THREE.Vector3( MX + 0.15, 0.38,  -0.08),
+        new THREE.Vector3( MX + 0.4,  0.5,   -0.25),
+
+        // Return: arco libre — se aleja de la Luna y vuelve a la Tierra
+        // La Y se hace negativa gradualmente, X decrece
+        new THREE.Vector3( MX + 0.3, -0.3,   -0.4),
+        new THREE.Vector3( 3.0,      -1.2,   -0.4),
+        new THREE.Vector3( 2.0,      -2.0,   -0.3),
+        new THREE.Vector3( 1.0,      -2.2,   -0.15),
+        new THREE.Vector3( 0.3,      -1.8,   -0.05),
+
+        // Reentry: corredor de entrada — se acerca a la superficie sur
+        // Distancia al origen: sqrt(0.15²+(1.3)²) ≈ 1.31 → por encima de la Tierra
+        new THREE.Vector3( 0.15,    -(EARTH_R + 0.4),  0.03),
+        new THREE.Vector3( 0.06,    -(EARTH_R + 0.08), 0.01),
+
+        // Splashdown: toca la superficie
+        new THREE.Vector3( 0.05,    -EARTH_R,           0.0),
+    ]
+
+    // Construir y dibujar curva A
+    const curveA = new THREE.CatmullRomCurve3(waypointsA)
+    const ptsA   = curveA.getPoints(300)
+    const geoA   = new THREE.BufferGeometry().setFromPoints(ptsA)
+
+    // Construir y dibujar curva B
+    const curveB = new THREE.CatmullRomCurve3(waypointsB)
+    const ptsB   = curveB.getPoints(500)
+    const geoB   = new THREE.BufferGeometry().setFromPoints(ptsB)
+
+    const mat = new THREE.LineDashedMaterial({
+        color: 0xc8a96e, dashSize: 0.1, gapSize: 0.07,
+        transparent: true, opacity: 0.45,
+    })
+
+    const lineA = new THREE.Line(geoA, mat.clone())
+    lineA.computeLineDistances()
+    scene.add(lineA)
+
+    const lineB = new THREE.Line(geoB, mat.clone())
+    lineB.computeLineDistances()
+    scene.add(lineB)
+
+    return {
+        curveA, curveB, lineA, lineB,
+        // Devuelve punto de curva A dado t∈[0,1]
+        getPointA(t) { return curveA.getPoint(Math.max(0, Math.min(1, t))) },
+        // Devuelve punto de curva B dado t∈[0,1]
+        getPointB(t) { return curveB.getPoint(Math.max(0, Math.min(1, t))) },
+        dispose() {
+            scene.remove(lineA); geoA.dispose()
+            scene.remove(lineB); geoB.dispose()
+            mat.dispose()
+        }
+    }
+}
+
+// ─── Clase principal ──────────────────────────────────────────────────────────
+
+export class ArtemisII {
+    constructor(solarSystem) {
+        this.solarSystem = solarSystem
+
+        this.scene      = null
+        this.camera     = null
+
+        // Refs a los objetos del sistema solar que reutilizamos
+        this._earthMesh = null   // mesh de la Tierra del sistema solar
+        this._moonMesh  = null   // mesh de la Luna del sistema solar
+
+        // Objetos exclusivos de la misión
+        this.spacecraft  = null
+        this.plume       = null
+        this.plume2      = null
+        this.trajectory  = null
+        this.hud         = null
+        this._lights     = []
+
+        // Estado
+        this._orbitAngle = 0
+        this.phaseIndex  = 0
+        this.phaseFrame  = 0
+        this.totalFrame  = 0
+
+        // Cámara
+        this._camPos    = new THREE.Vector3()
+        this._camTarget = new THREE.Vector3()
+
+        // Escena guardada
+        this._savedBackground    = null
+        this._hiddenSceneObjects = []
+    }
+
+    // ── start ─────────────────────────────────────────────────────────────────
+
+    start(scene, camera) {
+        this.scene  = scene
+        this.camera = camera
+
+        SimulationSettings.missionMode = true
+
+        // Ocultar panel izquierdo
+        const panel = document.querySelector('.sp-panel')
+        if (panel) panel.style.display = 'none'
+
+        // Ocultar TODOS los objetos de la escena del sistema solar
+        this._hiddenSceneObjects = []
+        scene.children.forEach(child => {
+            if (child.isLight) return
+            this._hiddenSceneObjects.push({ obj: child, wasVisible: child.visible })
+            child.visible = false
+        })
+
+        // Fondo negro espacio
+        this._savedBackground = scene.background
+        scene.background = new THREE.Color(0x00000a)
+
+        // Iluminación misión
+        const sunLight = new THREE.DirectionalLight(0xfff4e0, 3.5)
+        sunLight.position.set(60, 20, 10)
+        scene.add(sunLight)
+        this._lights.push(sunLight)
+
+        const ambient = new THREE.AmbientLight(0x112244, 1.6)
+        scene.add(ambient)
+        this._lights.push(ambient)
+
+        // ── Reutilizar la Tierra del sistema solar ───────────────────────────
+        // El pivot fue ocultado por el bucle anterior. Lo hacemos visible
+        // explícitamente junto con su mesh e hitbox.
+        const earthPlanet = this.solarSystem.objects.find(o => o.name === 'Earth')
+        if (earthPlanet) {
+            this._earthMesh = earthPlanet.mesh
+            this._savedEarthPivotPos = earthPlanet.pivot.position.clone()
+            earthPlanet.pivot.position.set(0, 0, 0)
+            // Forzar visibilidad del pivot y todo lo que contiene
+            earthPlanet.pivot.visible = true
+            earthPlanet.pivot.traverse(child => { child.visible = true })
+            this._earthPlanetRef = earthPlanet
+        }
+
+        // ── Reutilizar la Luna del sistema solar ─────────────────────────────
+        // La sacamos de la jerarquía de la Tierra y la añadimos a la escena
+        // directamente para poder posicionarla de forma independiente.
+        const moonSat = this.solarSystem.objects.find(o => o.name === 'Moon')
+        if (moonSat) {
+            this._moonSatRef     = moonSat
+            this._moonOrigParent = moonSat.pivot.parent
+            scene.add(moonSat.pivot)
+            moonSat.pivot.position.copy(MOON_FIXED_POS)
+            moonSat.mesh.position.set(0, 0, 0)
+            moonSat.pivot.visible = true
+            moonSat.mesh.visible  = true
+        }
+
+        // Plumas de escape
+        this.plume  = makePlume(scene, 0xff6600, 200)
+        this.plume2 = makePlume(scene, 0xffcc44, 90)
+
+        // Cargar modelo GLB
+        this.spacecraft = new THREE.Group()
+        scene.add(this.spacecraft)
+        loadArtemisModel().then(model => {
+            scene.remove(this.spacecraft)
+            this.spacecraft = model
+            scene.add(this.spacecraft)
+        })
+
+        // Trayectoria completa (una sola curva continua)
+        this.trajectory = buildFullTrajectory(scene)
+
+        // HUD
+        this.hud = new ArtemisHUD(() => window.dispatchEvent(new CustomEvent('artemis:stop')))
+        this.hud.show()
+
+        // ── Cámara: siempre cerca de la Tierra al iniciar ────────────────────
+        // Se resetea aquí para que relanzar la misión empiece siempre igual
+        this._camPos.set(0, 1.2, 3.2)
+        this._camTarget.set(0, 0, 0)
+        camera.position.copy(this._camPos)
+        camera.lookAt(this._camTarget)
+        if (camera._controls) {
+            camera._controls.target.set(0, 0, 0)
+            camera._controls.update()
+        }
+
+        // Reset de estado
+        this._orbitAngle = 0
+        this.phaseIndex  = 0
+        this.phaseFrame  = 0
+        this.totalFrame  = 0
+        this._missionEnded = false
+        this._applyPhase()
+    }
+
+    // ── end ───────────────────────────────────────────────────────────────────
 
     end(scene) {
         SimulationSettings.missionMode = false
-        if (this.ship && this.ship.parent) {
-            this.ship.parent.remove(this.ship)
-        }
-    
-        this.ship = null
 
-        SimulationSettings.timeScale = 1
+        const panel = document.querySelector('.sp-panel')
+        if (panel) panel.style.display = ''
+
+        // Restaurar Tierra al pivot original
+        if (this._earthPlanetRef && this._savedEarthPivotPos) {
+            this._earthPlanetRef.pivot.position.copy(this._savedEarthPivotPos)
+        }
+
+        // Restaurar Luna a su jerarquía original
+        if (this._moonSatRef && this._moonOrigParent) {
+            this._moonOrigParent.add(this._moonSatRef.pivot)
+            this._moonSatRef.pivot.position.set(0, 0, 0)
+        }
+
+        // Restaurar objetos ocultos del sistema solar
+        this._hiddenSceneObjects.forEach(({ obj, wasVisible }) => {
+            obj.visible = wasVisible
+        })
+        this._hiddenSceneObjects = []
+
+        if (this._savedBackground) scene.background = this._savedBackground
+
+        this._lights.forEach(l => scene.remove(l))
+        this._lights = []
+
+        this.plume?.dispose()
+        this.plume2?.dispose()
+        this.trajectory?.dispose()
+
+        if (this.spacecraft) {
+            scene.remove(this.spacecraft)
+            this.spacecraft.traverse(c => {
+                if (c.isMesh) { c.geometry.dispose(); c.material.dispose() }
+            })
+            this.spacecraft = null
+        }
+
+        this.hud?.hide()
+        this.hud = null
+    }
+
+    // ── Update ────────────────────────────────────────────────────────────────
+
+    update() {
+        if (!this.scene || this._missionEnded) return
+
+        this.totalFrame++
+        this.phaseFrame++
+
+        const phase = PHASES[this.phaseIndex]
+        const t     = Math.min(this.phaseFrame / phase.duration, 1)
+
+        // Avanzar fase
+        if (this.phaseFrame >= phase.duration) {
+            if (this.phaseIndex < PHASES.length - 1) {
+                this.phaseIndex++
+                this.phaseFrame = 0
+                this._applyPhase()
+            } else {
+                // Última fase terminada → detener misión automáticamente
+                if (!this._missionEnded) {
+                    this._missionEnded = true
+                    setTimeout(() => {
+                        window.dispatchEvent(new CustomEvent('artemis:stop'))
+                    }, 1500)
+                }
+                return
+            }
+        }
+
+        // Tierra rota suavemente (solo si tenemos el mesh)
+        if (this._earthMesh) this._earthMesh.rotation.y += 0.0005
+
+        // Luna estática — no se mueve
+        // (ya posicionada en MOON_FIXED_POS en start())
+
+        // Lógica por fase
+        switch (phase.id) {
+            case 'launch':        this._updateLaunch(t);        break
+            case 'parking_orbit': this._updateParkingOrbit(t);  break
+            case 'tli':           this._updateTLI(t);            break
+            case 'coast':         this._updateCoast(t);          break
+            case 'flyby':         this._updateFlyby(t);          break
+            case 'return':        this._updateReturn(t);         break
+            case 'reentry':       this._updateReentry(t);        break
+            case 'splashdown':    this._updateSplashdown(t);     break
+        }
+
+        this.hud?.update(PHASES[this.phaseIndex], t, this.phaseIndex, PHASES.length)
+
+        this.camera.position.lerp(this._camPos, CAM_LERP)
+        this.camera.lookAt(this._camTarget)
+    }
+
+    // ── Transición de fase ────────────────────────────────────────────────────
+
+    _applyPhase() {
+        const id = PHASES[this.phaseIndex].id
+        const plumeOn = ['launch', 'tli', 'reentry'].includes(id)
+        plumeOn ? this.plume.show()  : this.plume.hide()
+        plumeOn ? this.plume2.show() : this.plume2.hide()
+    }
+
+    // ── Helpers de curva ──────────────────────────────────────────────────────
+
+    _curvePoint(phaseId, t) {
+        const { curve, range: [a, b] } = PHASE_CURVE[phaseId]
+        const globalT = a + (b - a) * this._ease(t)
+        return curve === 'A'
+            ? this.trajectory.getPointA(globalT)
+            : this.trajectory.getPointB(globalT)
+    }
+
+    _curvePointNext(phaseId, t, delta = 0.012) {
+        const { curve, range: [a, b] } = PHASE_CURVE[phaseId]
+        const globalT = Math.min(a + (b - a) * this._ease(t) + delta, 1)
+        return curve === 'A'
+            ? this.trajectory.getPointA(globalT)
+            : this.trajectory.getPointB(globalT)
+    }
+
+    // ── Fases ─────────────────────────────────────────────────────────────────
+
+    _updateLaunch(t) {
+        const pt     = this._curvePoint('launch', t)
+        const ptNext = this._curvePointNext('launch', t)
+
+        this.spacecraft.position.copy(pt)
+        this.spacecraft.lookAt(ptNext)
+
+        this.plume.update(pt)
+        this.plume2.update(pt)
+
+        this._camPos.set(0.3 + t * 0.1, EARTH_R + 0.04 + t * 0.5, 1.0 - t * 0.15)
+        this._camTarget.copy(pt)
+    }
+
+    _updateParkingOrbit(t) {
+        const pt     = this._curvePoint('parking_orbit', t)
+        const ptNext = this._curvePointNext('parking_orbit', t)
+
+        this.spacecraft.position.copy(pt)
+        this.spacecraft.lookAt(ptNext)
+
+        const e = this._ease(Math.min(t * 2, 1))
+        this._camPos.set(
+            THREE.MathUtils.lerp(0.5, 0, e),
+            THREE.MathUtils.lerp(1.8, 3.0, e),
+            THREE.MathUtils.lerp(1.5, 3.2, e)
+        )
+        this._camTarget.set(0, 0, 0)
+    }
+
+    _updateTLI(t) {
+        const pt     = this._curvePoint('tli', t)
+        const ptNext = this._curvePointNext('tli', t)
+
+        this.spacecraft.position.copy(pt)
+        this.spacecraft.lookAt(ptNext)
+
+        this.plume.update(pt)
+        this.plume2.update(pt)
+
+        const pull = THREE.MathUtils.lerp(2.5, 5.5, this._ease(t))
+        this._camPos.set(-pull * 0.25, pull * 0.35, pull * 0.8)
+        this._camTarget.set(0, 0, 0)
+    }
+
+    _updateCoast(t) {
+        const pt     = this._curvePoint('coast', t)
+        const ptNext = this._curvePointNext('coast', t)
+
+        this.spacecraft.position.copy(pt)
+        this.spacecraft.lookAt(ptNext)
+        this.spacecraft.rotateZ(0.002)
+
+        this._camPos.set(-4, 3, 5.5)
+        this._camTarget.set(0, 0, 0)
+    }
+
+    _updateFlyby(t) {
+        const pt     = this._curvePoint('flyby', t)
+        const ptNext = this._curvePointNext('flyby', t)
+
+        this.spacecraft.position.copy(pt)
+        this.spacecraft.lookAt(ptNext)
+
+        const moonPos = MOON_FIXED_POS
+        const toMoon  = moonPos.clone().sub(pt).normalize()
+        const offset  = toMoon.clone().multiplyScalar(-0.5)
+        offset.y     += 0.15
+
+        this._camPos.copy(pt).add(offset)
+        this._camTarget.copy(moonPos)
+    }
+
+    _updateReturn(t) {
+        const pt     = this._curvePoint('return', t)
+        const ptNext = this._curvePointNext('return', t)
+
+        this.spacecraft.position.copy(pt)
+        this.spacecraft.lookAt(ptNext)
+        this.spacecraft.rotateZ(0.002)
+
+        this._camPos.set(4.5, 3.5, -3)
+        this._camTarget.set(0, 0, 0)
+    }
+
+    _updateReentry(t) {
+        const pt = this._curvePoint('reentry', t)
+
+        this.spacecraft.position.copy(pt)
+        this.spacecraft.lookAt(new THREE.Vector3(0, 0, 0))
+
+        this.plume.update(pt)
+        this.plume2.update(pt)
+
+        const intensity = Math.sin(t * Math.PI) * 1.8
+        this.spacecraft.traverse(child => {
+            if (child.isMesh && child.material?.emissive) {
+                child.material.emissive.setRGB(intensity * 0.9, intensity * 0.18, 0)
+                child.material.emissiveIntensity = intensity
+            }
+        })
+
+        const away = pt.clone().normalize().negate().multiplyScalar(0.25).add(pt)
+        away.y    += 0.08
+        this._camPos.copy(away)
+        this._camTarget.set(0, 0, 0)
+    }
+
+    _updateSplashdown(t) {
+        const pt = this._curvePoint('splashdown', t)
+        this.spacecraft.position.copy(pt)
+        this.spacecraft.lookAt(new THREE.Vector3(0, 0, 0))
+
+        this.spacecraft.traverse(child => {
+            if (child.isMesh && child.material?.emissive) {
+                child.material.emissive.setScalar(0)
+                child.material.emissiveIntensity = 0
+            }
+        })
+
+        this.spacecraft.position.y += Math.sin(this.totalFrame * 0.04) * 0.003
+
+        const angle = this.totalFrame * 0.005
+        const base  = pt.clone().normalize().multiplyScalar(EARTH_R + 0.015)
+        this._camPos.set(
+            base.x + Math.cos(angle) * 0.22,
+            base.y + 0.12,
+            base.z + Math.sin(angle) * 0.22
+        )
+        this._camTarget.copy(base)
+    }
+
+    // ── Easing cuadrático ─────────────────────────────────────────────────────
+
+    _ease(t) {
+        return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t
     }
 }===== objects/artificialSatellite.js =====
 // src/objects/artificialSatellite.js
@@ -722,6 +1273,7 @@ export class ArtificialSatellite {
         this.escapeAngle = Math.random() * Math.PI * 2
         this.escapeSpeed = 0.002
         this.escapeCurve = 0.0005
+        this.info = arguments[0].info || {}
 
         // Orbital pivot with inclination
         this.pivot = new THREE.Object3D()
@@ -730,6 +1282,7 @@ export class ArtificialSatellite {
         // Container for the satellite model
         this.container = new THREE.Object3D()
         this.pivot.add(this.container)
+        this.container.userData.parent = this
 
         // Load the satellite model
         const loader = new GLTFLoader()
@@ -965,7 +1518,7 @@ export class Planet {
 
             const ringTexture = new THREE.TextureLoader().load('/textures/saturn_ring.png')
 
-            const ringMaterial = new THREE.MeshBasicMaterial({
+            const ringMaterial = new THREE.MeshStandardMaterial({
                 map: ringTexture,
                 side: THREE.DoubleSide,
                 transparent: true,
@@ -1000,6 +1553,9 @@ export class Planet {
         this.pivot.add(this.hitbox)
 
         this.hitbox.userData.parent = this
+
+        // Track whether we've frozen the orbit position
+        this._orbitFrozen = false
   }
 
     // Add planet system to scene
@@ -1010,6 +1566,21 @@ export class Planet {
     // Update method (used by loop system)
     update() {
         if (SimulationSettings.pause) return
+
+        if (SimulationSettings.missionMode) {
+            // Freeze orbital position on first missionMode frame
+            if (!this._orbitFrozen) {
+                this._frozenPivotPos = this.pivot.position.clone()
+                this._orbitFrozen = true
+            }
+            // Keep pivot locked — only allow self-rotation
+            this.pivot.position.copy(this._frozenPivotPos)
+            this.mesh.rotation.y += this.rotationSpeed * SimulationSettings.timeScale
+            return
+        }
+ 
+        // Normal mode: unfreeze if we were frozen
+        this._orbitFrozen = false
         
         // Orbit
         this.angle = (this.angle || 0) + this.orbitSpeed * SimulationSettings.timeScale
@@ -1073,6 +1644,8 @@ export class Satellite {
         this.pivot = new THREE.Object3D()
         this.pivot.add(this.mesh)
 
+        // Track whether we've frozen the orbit position
+        this._orbitFrozen = false
     }
 
     addToPlanet(planet) {
@@ -1088,6 +1661,26 @@ export class Satellite {
         this.mesh.visible = true
     
         if (SimulationSettings.pause) return
+
+        if (SimulationSettings.missionMode) {
+            // Freeze orbital position on first missionMode frame
+            if (!this._orbitFrozen) {
+                this._frozenPos = this.mesh.position.clone()
+                this._orbitFrozen = true
+            }
+            this.mesh.position.copy(this._frozenPos)
+ 
+            // Still allow self-rotation
+            if (this.tidalLock) {
+                this.mesh.lookAt(0, 0, 0)
+            } else {
+                this.mesh.rotation.y += this.rotationSpeed * SimulationSettings.timeScale
+            }
+            return
+        }
+ 
+        // Normal mode: unfreeze
+        this._orbitFrozen = false
         
         this.angle += this.orbitSpeed * SimulationSettings.timeScale
     
@@ -1122,21 +1715,24 @@ import { SimulationSettings } from '../systems/simulationSettings.js'
 export class Sun {
     constructor({
         size = 2,
-        color = 0xffff00,
-        lightIntensity = 50,
-        lightDistance = 100
+        color = 0xffffff,
+        lightIntensity = 200,
+        lightDistance = 0
     } = {}) {
 
         // Geometry & material (visible sun)
         const geometry = new THREE.SphereGeometry(size, 32, 32)
         const material = new THREE.MeshBasicMaterial({
-            map: loadTexture('/textures/sun.jpg')
+            map: loadTexture('/textures/sun.jpg'),
+            emissive: 0xffffaa,
+            emissiveIntensity: 3
         })
 
         this.mesh = new THREE.Mesh(geometry, material)
 
         // Light emitted by the sun
         this.light = new THREE.PointLight(color, lightIntensity, lightDistance)
+        this.light.decay = 1.5
         this.mesh.add(this.light)
         this.light.position.set(0, 0, 0)
     }
@@ -1199,6 +1795,17 @@ export class CameraController {
         // this.controls.target.copy(this.initialTarget)
         // this.controls.object.position.copy(this.initialPosition)
         // this.controls.update()
+    }
+
+    focusOnObject(object) {
+
+        const pos = new THREE.Vector3()
+        object.getWorldPosition(pos)
+    
+        this.targetPosition.copy(pos)
+        this.offset.set(2, 2, 2)
+    
+        this.focusedObject = object
     }
 
     update() {
@@ -1334,7 +1941,8 @@ export const SimulationSettings = {
     showSatellites: true,
     pause: false,
     timeScale: 1,
-    missionMode: false
+    missionMode: false,
+    ambientIntensity: 3
 }===== systems/solarSystem.js =====
 // src/systems/SolarSystem.js
 
@@ -1349,23 +1957,27 @@ import { SATELLITES } from '../data/satellites.js'
 import { ArtificialSatellite } from '../objects/artificialSatellite.js'
 import { ARTIFICIAL_SATELLITES } from '../data/artificialSatellites.js'
 import { SimulationSettings } from '../systems/simulationSettings.js'
+import { SatelliteInfoUI } from '../ui/satelliteInfo.js'
 
 export class SolarSystem {
     constructor(scene, camera) {
         this.scene = scene
         this.objects = []
         this.ui = new PlanetInfoUI()
+        this.satelliteUI = new SatelliteInfoUI()
         this.init(camera)
     }
   
     init(camera) {
 
         this.orbits = []
+        this.artificialSatellites = []
 
         // Sun
         const sun = new Sun({
             size: 2,
-            lightIntensity: 5
+            lightIntensity: 200,
+            lightDistance: 0
         })
 
         sun.addToScene(this.scene)
@@ -1416,6 +2028,7 @@ export class SolarSystem {
                     }
 
                     this.objects.push(sat)
+                    this.artificialSatellites.push(sat)
                 }
             }
 
@@ -1439,6 +2052,7 @@ export class SolarSystem {
         )
           
         this.interaction.onSelect = (planet) => {
+            this.satelliteUI.hide()
             this.ui.showPlanet(planet)
 
             if (this.cameraController) {
@@ -1458,6 +2072,26 @@ export class SolarSystem {
             }
           
             this.ui.hide()
+        }
+
+        this.satelliteUI.onExit = () => {
+
+            if (this.cameraController) {
+                this.cameraController.resetView()
+            }
+        
+            this.satelliteUI.hide()
+        }
+    }
+
+    // Called by controls panel when an artificial satellite is selected
+    onSatelliteSelect(sat) {
+
+        this.ui.hide()
+        this.satelliteUI.showSatellite(sat)
+    
+        if (this.cameraController) {
+            this.cameraController.focusOn({mesh: sat.container})
         }
     }
 
@@ -1481,107 +2115,980 @@ export class SolarSystem {
         // Pause updates if mission mode is active
         if (SimulationSettings.missionMode) return
     }
+}===== ui/artemisHUD.js =====
+// src/ui/artemisHUD.js
+// Cinematic HUD for Artemis II — palette matches the rest of the solar system UI
+// Gold accent: #c8a96e  |  Text: #e8dcc8  |  Dim text: #c8bca8
+// Fonts: Orbitron (labels) + Exo 2 (body) — same as controlsPanel / planetInfo
+
+const HUD_STYLES = `
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Exo+2:wght@300;400;500&display=swap');
+
+    /* ── Root ───────────────────────────────────────── */
+    #artemis-hud {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 200;
+        font-family: 'Exo 2', Arial, sans-serif;
+    }
+
+    /* ── Subtle scanlines ───────────────────────────── */
+    #artemis-hud::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 3px,
+            rgba(200, 169, 110, 0.012) 3px,
+            rgba(200, 169, 110, 0.012) 4px
+        );
+        pointer-events: none;
+    }
+
+    /* ── Corner brackets (matches panel style) ──────── */
+    .hud-corner {
+        position: absolute;
+        width: 36px;
+        height: 36px;
+        border-color: rgba(200, 169, 110, 0.45);
+        border-style: solid;
+        border-width: 0;
+    }
+    .hud-corner.tl { top: 16px; left: 16px; border-top-width: 2px; border-left-width: 2px; }
+    .hud-corner.tr { top: 16px; right: 16px; border-top-width: 2px; border-right-width: 2px; }
+    .hud-corner.bl { bottom: 16px; left: 16px; border-bottom-width: 2px; border-left-width: 2px; }
+    .hud-corner.br { bottom: 16px; right: 16px; border-bottom-width: 2px; border-right-width: 2px; }
+
+    /* ── Top centre bar ─────────────────────────────── */
+    #hud-top {
+        position: absolute;
+        top: 20px;
+        left: 0; right: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 16px;
+    }
+
+    #hud-mission-id {
+        font-family: 'Orbitron', Arial, sans-serif;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 5px;
+        text-transform: uppercase;
+        color: #c8a96e;
+        text-shadow: 0 0 10px rgba(200, 169, 110, 0.55);
+        animation: hud-breathe 3s ease-in-out infinite;
+    }
+
+    .hud-top-sep {
+        width: 1px; height: 12px;
+        background: rgba(200, 169, 110, 0.3);
+    }
+
+    #hud-timestamp {
+        font-family: 'Orbitron', Arial, sans-serif;
+        font-size: 10px;
+        letter-spacing: 2px;
+        color: #c8bca8;
+    }
+
+    /* ── MET — top right ────────────────────────────── */
+    #hud-met {
+        position: absolute;
+        top: 52px;
+        right: 20px;
+        text-align: right;
+    }
+    #hud-met-label {
+        font-family: 'Orbitron', Arial, sans-serif;
+        font-size: 8px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: rgba(200, 169, 110, 0.5);
+        margin-bottom: 3px;
+    }
+    #hud-met-value {
+        font-family: 'Orbitron', Arial, sans-serif;
+        font-size: 19px;
+        font-weight: 700;
+        letter-spacing: 3px;
+        color: #c8a96e;
+        text-shadow: 0 0 12px rgba(200, 169, 110, 0.45);
+    }
+
+    /* ── Logo — top left ────────────────────────────── */
+    #hud-logo {
+        position: absolute;
+        top: 52px;
+        left: 20px;
+    }
+    #hud-logo-title {
+        font-family: 'Orbitron', Arial, sans-serif;
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 3.5px;
+        color: #c8a96e;
+        text-transform: uppercase;
+    }
+    #hud-logo-sub {
+        font-size: 8px;
+        letter-spacing: 2px;
+        color: rgba(200, 169, 110, 0.4);
+        margin-top: 2px;
+    }
+
+    /* ── Crew — below logo ──────────────────────────── */
+    #hud-crew {
+        position: absolute;
+        top: 100px;
+        left: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+    .hud-crew-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .hud-crew-dot {
+        width: 4px; height: 4px;
+        border-radius: 50%;
+        background: #c8a96e;
+        box-shadow: 0 0 5px rgba(200, 169, 110, 0.6);
+        flex-shrink: 0;
+    }
+    .hud-crew-name {
+        font-family: 'Orbitron', Arial, sans-serif;
+        font-size: 7.5px;
+        letter-spacing: 1.5px;
+        color: #c8bca8;
+    }
+    .hud-crew-role {
+        font-size: 7px;
+        letter-spacing: 1px;
+        color: rgba(200, 169, 110, 0.45);
+    }
+
+    /* ── Telemetry panel — bottom left ──────────────── */
+    #hud-telem {
+        position: absolute;
+        bottom: 36px;
+        left: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+    .hud-telem-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .hud-telem-label {
+        font-family: 'Orbitron', Arial, sans-serif;
+        font-size: 8px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: rgba(200, 169, 110, 0.55);
+        width: 68px;
+    }
+    .hud-telem-value {
+        font-family: 'Orbitron', Arial, sans-serif;
+        font-size: 13px;
+        color: #e8dcc8;
+        text-shadow: 0 0 6px rgba(200, 169, 110, 0.3);
+    }
+    .hud-telem-unit {
+        font-size: 9px;
+        color: rgba(200, 169, 110, 0.45);
+        letter-spacing: 1px;
+    }
+
+    /* ── Phase list — right side ────────────────────── */
+    #hud-phases {
+        position: absolute;
+        right: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+        align-items: flex-end;
+    }
+    .hud-phase-item {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        opacity: 0.28;
+        transition: opacity 0.4s ease;
+    }
+    .hud-phase-item.done   { opacity: 0.5; }
+    .hud-phase-item.active { opacity: 1; }
+
+    .hud-phase-dot {
+        width: 6px; height: 6px;
+        border-radius: 50%;
+        background: rgba(200, 169, 110, 0.25);
+        border: 1px solid rgba(200, 169, 110, 0.3);
+        flex-shrink: 0;
+        transition: background 0.4s, box-shadow 0.4s;
+    }
+    .hud-phase-item.done .hud-phase-dot {
+        background: rgba(200, 169, 110, 0.65);
+        border-color: #c8a96e;
+    }
+    .hud-phase-item.active .hud-phase-dot {
+        background: #c8a96e;
+        border-color: #c8a96e;
+        box-shadow: 0 0 8px rgba(200, 169, 110, 0.8);
+        animation: hud-pulse 1.3s ease-in-out infinite;
+    }
+    .hud-phase-name {
+        font-family: 'Orbitron', Arial, sans-serif;
+        font-size: 8px;
+        letter-spacing: 1.8px;
+        text-transform: uppercase;
+        color: #c8bca8;
+        transition: color 0.3s;
+    }
+    .hud-phase-item.active .hud-phase-name { color: #e8dcc8; }
+
+    /* ── Centre phase banner ────────────────────────── */
+    #hud-phase-banner {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        pointer-events: none;
+    }
+    #hud-phase-label {
+        font-family: 'Orbitron', Arial, sans-serif;
+        font-size: 24px;
+        font-weight: 900;
+        letter-spacing: 7px;
+        text-transform: uppercase;
+        color: #f5ede0;
+        text-shadow: 0 0 28px rgba(200, 169, 110, 0.7), 0 0 60px rgba(200, 169, 110, 0.25);
+        opacity: 0;
+        transform: translateY(8px);
+        transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    #hud-phase-label.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    #hud-phase-sub {
+        font-family: 'Exo 2', Arial, sans-serif;
+        font-size: 11px;
+        letter-spacing: 3px;
+        color: #c8bca8;
+        margin-top: 8px;
+        opacity: 0;
+        transition: opacity 0.5s ease 0.2s;
+    }
+    #hud-phase-sub.visible { opacity: 1; }
+
+    /* ── Progress bar — below phase banner ──────────── */
+    #hud-progress-wrap {
+        position: absolute;
+        bottom: 36px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 260px;
+        text-align: center;
+    }
+    #hud-progress-track {
+        width: 100%;
+        height: 2px;
+        background: rgba(200, 169, 110, 0.15);
+        border-radius: 1px;
+        overflow: hidden;
+    }
+    #hud-progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #c8a96e, #e8dcc8);
+        box-shadow: 0 0 8px rgba(200, 169, 110, 0.7);
+        width: 0%;
+        transition: width 0.25s linear;
+        border-radius: 1px;
+    }
+    #hud-progress-label {
+        font-family: 'Orbitron', Arial, sans-serif;
+        font-size: 7px;
+        letter-spacing: 2px;
+        color: rgba(200, 169, 110, 0.45);
+        margin-top: 5px;
+        text-transform: uppercase;
+    }
+
+    /* ── Exit button — pointer-events ON ───────────── */
+    #hud-exit-btn {
+        position: absolute;
+        bottom: 36px;
+        right: 20px;
+        pointer-events: all;
+        cursor: pointer;
+
+        padding: 9px 14px;
+        background: transparent;
+        border: 1px solid rgba(200, 100, 80, 0.35);
+        border-radius: 8px;
+        color: rgba(220, 130, 110, 0.85);
+        font-family: 'Orbitron', Arial, sans-serif;
+        font-size: 9px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        transition: all 0.2s;
+    }
+    #hud-exit-btn:hover {
+        background: rgba(200, 100, 80, 0.12);
+        border-color: rgba(200, 100, 80, 0.65);
+        color: #e08070;
+    }
+
+    /* ── Top divider line ───────────────────────────── */
+    #hud-top-line {
+        position: absolute;
+        top: 44px;
+        left: 0; right: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(200, 169, 110, 0.25), transparent);
+    }
+
+    /* ── Animations ─────────────────────────────────── */
+    @keyframes hud-breathe {
+        0%, 100% { opacity: 1; }
+        50%       { opacity: 0.65; }
+    }
+    @keyframes hud-pulse {
+        0%, 100% { transform: scale(1);    opacity: 1; }
+        50%       { transform: scale(1.45); opacity: 0.7; }
+    }
+
+    /* ── Phase flash overlay ────────────────────────── */
+    #hud-flash {
+        position: absolute;
+        inset: 0;
+        background: rgba(200, 169, 110, 0);
+        pointer-events: none;
+        transition: background 0.1s ease;
+    }
+`
+
+const CREW = [
+    { name: 'R. WISEMAN', role: 'CDR' },
+    { name: 'V. GLOVER',  role: 'PLT' },
+    { name: 'C. KOCH',    role: 'MS1' },
+    { name: 'J. REID',    role: 'MS2' },
+]
+
+const PHASE_NAMES = [
+    'LAUNCH', 'PARKING ORBIT', 'TLI', 'COAST',
+    'LUNAR FLYBY', 'FREE RETURN', 'RE-ENTRY', 'SPLASHDOWN',
+]
+
+export class ArtemisHUD {
+    /**
+     * @param {Function} onExit  — callback fired when the user clicks "Abort Mission"
+     */
+    constructor(onExit) {
+        this._onExit    = onExit
+        this._startTime = Date.now()
+        this._lastPhase = null
+        this._hideTimer = null
+
+        this._injectStyles()
+        this._buildDOM()
+    }
+
+    // ── Lifecycle ─────────────────────────────────────────────────────────────
+
+    show() {
+        this.root.style.display = 'block'
+        this._startTime = Date.now()
+    }
+
+    hide() {
+        clearTimeout(this._hideTimer)
+        this.root?.remove()
+        this.root = null
+    }
+
+    // ── Per-frame update ──────────────────────────────────────────────────────
+
+    update(phase, t, phaseIndex, totalPhases) {
+        // MET
+        const elapsed = Math.floor((Date.now() - this._startTime) / 1000)
+        const hh = String(Math.floor(elapsed / 3600)).padStart(2, '0')
+        const mm = String(Math.floor((elapsed % 3600) / 60)).padStart(2, '0')
+        const ss = String(elapsed % 60).padStart(2, '0')
+        const met = `${hh}:${mm}:${ss}`
+
+        this._el('hud-met-value').textContent = met
+        this._el('hud-timestamp').textContent = `T+${met}`
+
+        // Phase banner — show on transition, auto-hide after 3.8 s
+        if (phase.id !== this._lastPhase) {
+            this._lastPhase = phase.id
+
+            // Flash
+            const flash = this._el('hud-flash')
+            flash.style.background = 'rgba(200,169,110,0.07)'
+            setTimeout(() => { if (flash) flash.style.background = 'rgba(200,169,110,0)' }, 280)
+
+            // Animate label
+            const labelEl = this._el('hud-phase-label')
+            const subEl   = this._el('hud-phase-sub')
+            labelEl.classList.remove('visible')
+            subEl.classList.remove('visible')
+
+            setTimeout(() => {
+                if (!this.root) return
+                labelEl.textContent = phase.label
+                subEl.textContent   = phase.subtitle
+                labelEl.classList.add('visible')
+                subEl.classList.add('visible')
+            }, 120)
+
+            clearTimeout(this._hideTimer)
+            this._hideTimer = setTimeout(() => {
+                if (!this.root) return
+                labelEl.classList.remove('visible')
+                subEl.classList.remove('visible')
+            }, 3800)
+
+            // Rebuild phase list
+            this._buildPhaseList(phaseIndex)
+        }
+
+        // Progress bar
+        this._el('hud-progress-fill').style.width = (t * 100).toFixed(1) + '%'
+
+        // Telemetry
+        const tel = this._telemetry(phase.id, t)
+        this._el('hud-vel').textContent   = tel.vel
+        this._el('hud-alt').textContent   = tel.alt
+        this._el('hud-range').textContent = tel.range
+    }
+
+    // ── Private ───────────────────────────────────────────────────────────────
+
+    _injectStyles() {
+        if (document.getElementById('artemis-hud-styles')) return
+        const s = document.createElement('style')
+        s.id = 'artemis-hud-styles'
+        s.textContent = HUD_STYLES
+        document.head.appendChild(s)
+    }
+
+    _buildDOM() {
+        this.root = document.createElement('div')
+        this.root.id = 'artemis-hud'
+        this.root.style.display = 'none'
+
+        this.root.innerHTML = `
+            <!-- Corners -->
+            <div class="hud-corner tl"></div>
+            <div class="hud-corner tr"></div>
+            <div class="hud-corner bl"></div>
+            <div class="hud-corner br"></div>
+
+            <!-- Flash overlay -->
+            <div id="hud-flash"></div>
+
+            <!-- Top bar -->
+            <div id="hud-top">
+                <div id="hud-mission-id">ARTEMIS&nbsp;II</div>
+                <div class="hud-top-sep"></div>
+                <div id="hud-timestamp">T+00:00:00</div>
+            </div>
+            <div id="hud-top-line"></div>
+
+            <!-- MET -->
+            <div id="hud-met">
+                <div id="hud-met-label">Mission Elapsed Time</div>
+                <div id="hud-met-value">00:00:00</div>
+            </div>
+
+            <!-- Logo -->
+            <div id="hud-logo">
+                <div id="hud-logo-title">NASA · ESA</div>
+                <div id="hud-logo-sub">Crewed Lunar Flyby · 2025</div>
+            </div>
+
+            <!-- Crew -->
+            <div id="hud-crew">
+                ${CREW.map(c => `
+                    <div class="hud-crew-row">
+                        <div class="hud-crew-dot"></div>
+                        <div class="hud-crew-name">${c.name}</div>
+                        <div class="hud-crew-role">${c.role}</div>
+                    </div>
+                `).join('')}
+            </div>
+
+            <!-- Telemetry -->
+            <div id="hud-telem">
+                <div class="hud-telem-row">
+                    <div class="hud-telem-label">Velocity</div>
+                    <div class="hud-telem-value" id="hud-vel">—</div>
+                    <div class="hud-telem-unit">km/s</div>
+                </div>
+                <div class="hud-telem-row">
+                    <div class="hud-telem-label">Altitude</div>
+                    <div class="hud-telem-value" id="hud-alt">—</div>
+                    <div class="hud-telem-unit">km</div>
+                </div>
+                <div class="hud-telem-row">
+                    <div class="hud-telem-label">Range</div>
+                    <div class="hud-telem-value" id="hud-range">—</div>
+                    <div class="hud-telem-unit">km</div>
+                </div>
+                <div class="hud-telem-row">
+                    <div class="hud-telem-label">DSN</div>
+                    <div class="hud-telem-value">LOCK</div>
+                    <div class="hud-telem-unit">·&nbsp;3 stations</div>
+                </div>
+            </div>
+
+            <!-- Phase list -->
+            <div id="hud-phases"></div>
+
+            <!-- Centre banner -->
+            <div id="hud-phase-banner">
+                <div id="hud-phase-label"></div>
+                <div id="hud-phase-sub"></div>
+            </div>
+
+            <!-- Progress bar -->
+            <div id="hud-progress-wrap">
+                <div id="hud-progress-track">
+                    <div id="hud-progress-fill"></div>
+                </div>
+                <div id="hud-progress-label">Phase progress</div>
+            </div>
+
+            <!-- Exit button (pointer-events enabled) -->
+            <button id="hud-exit-btn">✕ &nbsp;Abort Mission</button>
+        `
+
+        document.body.appendChild(this.root)
+
+        // Wire exit button
+        this.root.querySelector('#hud-exit-btn').addEventListener('click', () => {
+            if (this._onExit) this._onExit()
+        })
+
+        this._buildPhaseList(0)
+    }
+
+    _buildPhaseList(activeIndex) {
+        const container = this._el('hud-phases')
+        if (!container) return
+        container.innerHTML = PHASE_NAMES.map((name, i) => {
+            const cls = i < activeIndex ? 'hud-phase-item done'
+                      : i === activeIndex ? 'hud-phase-item active'
+                      : 'hud-phase-item'
+            return `
+                <div class="${cls}">
+                    <div class="hud-phase-name">${name}</div>
+                    <div class="hud-phase-dot"></div>
+                </div>
+            `
+        }).join('')
+    }
+
+    _el(id) {
+        return this.root?.querySelector(`#${id}`)
+    }
+
+    // Simulated telemetry values that evolve plausibly through each phase
+    _telemetry(phaseId, t) {
+        const li = (a, b) => (a + (b - a) * t).toFixed(1)
+        const li2 = (a, b) => Math.round(a + (b - a) * t).toLocaleString()
+        switch (phaseId) {
+            case 'launch':        return { vel: li(0.4, 7.8),    alt: li2(0, 185),         range: li2(0, 200) }
+            case 'parking_orbit': return { vel: '7.8',           alt: '185',               range: li2(200, 500) }
+            case 'tli':           return { vel: li(7.8, 10.8),   alt: li2(185, 1200),      range: li2(500, 8000) }
+            case 'coast':         return { vel: li(10.4, 0.9),   alt: li2(1200, 360000),   range: li2(8000, 380000) }
+            case 'flyby':         return { vel: li(0.9, 2.4),    alt: li2(360000, 8900),   range: li2(380000, 8900) }
+            case 'return':        return { vel: li(2.4, 10.8),   alt: li2(8900, 50000),    range: li2(8900, 350000) }
+            case 'reentry':       return { vel: li(11.0, 0.15),  alt: li2(120, 0),         range: li2(350000, 2) }
+            case 'splashdown':    return { vel: '0.0',           alt: '0',                 range: '0' }
+            default:              return { vel: '—',             alt: '—',                 range: '—' }
+        }
+    }
 }===== ui/controlsPanel.js =====
 // src/ui/controlsPanel.js
 
 import { SimulationSettings } from '../systems/simulationSettings.js'
 
+const STYLES = `
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Exo+2:wght@300;400;500&display=swap');
+
+    .sp-panel {
+        position: absolute;
+        bottom: 20px;
+        left: 20px;
+        padding: 20px;
+        background: rgba(15, 12, 6, 0.88);
+        border: 1px solid rgba(200, 169, 110, 0.2);
+        border-radius: 14px;
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        color: #e8dcc8;
+        font-family: 'Exo 2', Arial, sans-serif;
+        min-width: 220px;
+        max-width: 250px;
+        overflow: hidden;
+        z-index: 100;
+    }
+
+    .sp-panel::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(200, 169, 110, 0.65), transparent);
+        pointer-events: none;
+    }
+
+    .sp-panel-title {
+        font-family: 'Orbitron', Arial, sans-serif;
+        font-size: 11px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: #c8a96e;
+        margin: 0 0 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .sp-panel-title::before {
+        content: '';
+        width: 6px; height: 6px;
+        border-radius: 50%;
+        background: #c8a96e;
+        box-shadow: 0 0 8px rgba(200, 169, 110, 0.6);
+        flex-shrink: 0;
+    }
+
+    .sp-section-label {
+        font-family: 'Orbitron', Arial, sans-serif;
+        font-size: 9px;
+        letter-spacing: 2.5px;
+        text-transform: uppercase;
+        color: #c8a96e;
+        margin: 0 0 10px;
+    }
+
+    .sp-divider {
+        height: 1px;
+        background: linear-gradient(90deg, rgba(200, 169, 110, 0.18), transparent);
+        margin: 14px 0;
+    }
+
+    .sp-toggle-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 5px 0;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .sp-toggle-row:hover .sp-toggle-label { color: #ffffff; }
+
+    .sp-toggle-track {
+        width: 32px; height: 16px;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(200, 169, 110, 0.18);
+        position: relative;
+        transition: all 0.3s;
+        flex-shrink: 0;
+    }
+
+    .sp-toggle-track.on {
+        background: rgba(200, 169, 110, 0.22);
+        border-color: #c8a96e;
+    }
+
+    .sp-toggle-knob {
+        width: 10px; height: 10px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.35);
+        position: absolute;
+        top: 2px; left: 2px;
+        transition: all 0.3s;
+    }
+
+    .sp-toggle-track.on .sp-toggle-knob {
+        left: 18px;
+        background: #c8a96e;
+        box-shadow: 0 0 6px rgba(200, 169, 110, 0.7);
+    }
+
+    .sp-toggle-label {
+        font-size: 12.5px;
+        color: #c8bca8;
+        transition: color 0.2s;
+    }
+
+    .sp-slider-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+
+    .sp-slider-header span {
+        font-size: 12px;
+        color: #c8bca8;
+    }
+
+    .sp-slider-value {
+        font-family: 'Orbitron', Arial, sans-serif;
+        font-size: 13px;
+        color: #c8a96e;
+    }
+
+    .sp-range {
+        -webkit-appearance: none;
+        width: 100%;
+        height: 3px;
+        border-radius: 2px;
+        background: rgba(200, 169, 110, 0.22);
+        outline: none;
+        cursor: pointer;
+        margin-bottom: 14px;
+    }
+
+    .sp-range::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 14px; height: 14px;
+        border-radius: 50%;
+        background: #c8a96e;
+        box-shadow: 0 0 8px rgba(200, 169, 110, 0.6);
+        cursor: pointer;
+        transition: transform 0.15s;
+    }
+
+    .sp-range::-webkit-slider-thumb:hover { transform: scale(1.2); }
+
+    .sp-range::-moz-range-thumb {
+        width: 14px; height: 14px;
+        border-radius: 50%;
+        background: #c8a96e;
+        box-shadow: 0 0 8px rgba(200, 169, 110, 0.6);
+        border: none;
+        cursor: pointer;
+    }
+
+    .sp-sat-btn {
+        display: block;
+        width: 100%;
+        margin-bottom: 6px;
+        padding: 7px 12px;
+        background: transparent;
+        border: 1px solid rgba(200, 169, 110, 0.25);
+        border-radius: 8px;
+        color: #c8bca8;
+        font-family: 'Exo 2', Arial, sans-serif;
+        font-size: 12px;
+        cursor: pointer;
+        text-align: left;
+        transition: all 0.2s;
+        letter-spacing: 0.5px;
+    }
+
+    .sp-sat-btn:hover {
+        background: rgba(200, 169, 110, 0.1);
+        border-color: #c8a96e;
+        color: #e8dcc8;
+    }
+
+    .sp-btn-launch {
+        display: block;
+        width: 100%;
+        padding: 9px 14px;
+        background: rgba(200, 169, 110, 0.12);
+        border: 1px solid rgba(200, 169, 110, 0.45);
+        border-radius: 8px;
+        color: #e0c98a;
+        font-family: 'Orbitron', Arial, sans-serif;
+        font-size: 10px;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: all 0.2s;
+        margin-bottom: 8px;
+        text-align: center;
+    }
+
+    .sp-btn-launch:hover {
+        background: rgba(200, 169, 110, 0.2);
+        box-shadow: 0 0 16px rgba(200, 169, 110, 0.12);
+        color: #f0d9a0;
+    }
+
+    .sp-btn-abort {
+        display: block;
+        width: 100%;
+        padding: 9px 14px;
+        background: transparent;
+        border: 1px solid rgba(200, 100, 80, 0.35);
+        border-radius: 8px;
+        color: rgba(220, 130, 110, 0.85);
+        font-family: 'Orbitron', Arial, sans-serif;
+        font-size: 10px;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-align: center;
+    }
+
+    .sp-btn-abort:hover {
+        background: rgba(200, 100, 80, 0.12);
+        border-color: rgba(200, 100, 80, 0.65);
+        color: #e08070;
+    }
+`
+
 export class ControlsPanel {
     constructor() {
+        this.injectStyles()
         this.createPanel()
+    }
+
+    injectStyles() {
+        if (document.getElementById('sp-controls-styles')) return
+        const style = document.createElement('style')
+        style.id = 'sp-controls-styles'
+        style.textContent = STYLES
+        document.head.appendChild(style)
     }
 
     createPanel() {
         this.panel = document.createElement('div')
-
-        this.panel.style.position = 'absolute'
-        this.panel.style.bottom = '20px'
-        this.panel.style.left = '20px'
-        this.panel.style.padding = '15px'
-        this.panel.style.background = 'rgba(0,0,0,0.6)'
-        this.panel.style.border = '1px solid rgba(255,255,255,0.1)'
-        this.panel.style.borderRadius = '10px'
-        this.panel.style.color = 'white'
-        this.panel.style.fontFamily = 'Arial'
-        this.panel.style.minWidth = '200px'
+        this.panel.className = 'sp-panel'
 
         this.panel.innerHTML = `
-            <h3 style="margin-top:0;">Controls</h3>
+            <h3 class="sp-panel-title">Controls</h3>
 
-            <label>
-                <input type="checkbox" id="toggle-moons" checked />
-                Moons
-            </label><br/>
+            <div class="sp-section-label">Visibility</div>
 
-            <label>
-                <input type="checkbox" id="toggle-satellites" checked />
-                Artificial Satellites
-            </label><br/>
-
-            <label>
-                <input type="checkbox" id="toggle-planet-orbits" checked />
-                Planet Orbits
-            </label><br/>
-
-            <label>
-                <input type="checkbox" id="toggle-moon-orbits" checked />
-                Moon Orbits
-            </label><br/>
-
-            <label>
-                <input type="checkbox" id="toggle-pause" />
-                Pause Simulation
+            <label class="sp-toggle-row" id="row-moons">
+                <div class="sp-toggle-track on" id="track-moons">
+                    <div class="sp-toggle-knob"></div>
+                </div>
+                <span class="sp-toggle-label">Moons</span>
             </label>
 
-            <br/><br/>
+            <label class="sp-toggle-row" id="row-satellites">
+                <div class="sp-toggle-track on" id="track-satellites">
+                    <div class="sp-toggle-knob"></div>
+                </div>
+                <span class="sp-toggle-label">Artificial Satellites</span>
+            </label>
 
-            <label>
-                Simulation Speed
-            </label><br/>
+            <label class="sp-toggle-row" id="row-planet-orbits">
+                <div class="sp-toggle-track on" id="track-planet-orbits">
+                    <div class="sp-toggle-knob"></div>
+                </div>
+                <span class="sp-toggle-label">Planet Orbits</span>
+            </label>
 
-            <input 
-                type="range" 
-                id="time-scale" 
-                min="0" 
-                max="5" 
-                step="0.1" 
-                value="1"
-            />
+            <label class="sp-toggle-row" id="row-moon-orbits">
+                <div class="sp-toggle-track on" id="track-moon-orbits">
+                    <div class="sp-toggle-knob"></div>
+                </div>
+                <span class="sp-toggle-label">Moon Orbits</span>
+            </label>
 
-            <span id="time-scale-value">1x</span>
+            <div class="sp-divider"></div>
 
-            <hr/>
-            <h4>Missions</h4>
+            <div class="sp-section-label">Simulation</div>
 
-            <button id="start-artemis">Start Artemis II</button>
-            <button id="stop-mission">Stop Mission</button>
+            <label class="sp-toggle-row" id="row-pause">
+                <div class="sp-toggle-track" id="track-pause">
+                    <div class="sp-toggle-knob"></div>
+                </div>
+                <span class="sp-toggle-label">Pause Simulation</span>
+            </label>
+
+            <div style="margin-top:14px;">
+                <div class="sp-slider-header">
+                    <span>Speed</span>
+                    <span class="sp-slider-value" id="time-scale-value">1.0×</span>
+                </div>
+                <input
+                    class="sp-range"
+                    type="range"
+                    id="time-scale"
+                    min="0"
+                    max="5"
+                    step="0.1"
+                    value="1"
+                />
+            </div>
+
+            <div style="margin-top:14px;">
+                <div class="sp-slider-header">
+                    <span>Ambient illumination</span>
+                    <span class="sp-slider-value" id="ambient-light-value">1.0×</span>
+                </div>
+                <input
+                    class="sp-range"
+                    type="range"
+                    id="ambient-light"
+                    min="0"
+                    max="5"
+                    step="0.1"
+                    value="3"
+                />
+            </div>
+
+            <div class="sp-divider"></div>
+
+            <div class="sp-section-label">Satellites</div>
+            <div id="satellite-list"></div>
+
+            <div class="sp-divider"></div>
+
+            <div class="sp-section-label">Missions</div>
+
+            <button class="sp-btn-launch" id="start-artemis">⬡ &nbsp;Launch Artemis II</button>
+            <button class="sp-btn-abort" id="stop-mission">✕ &nbsp;Abort Mission</button>
         `
 
         document.body.appendChild(this.panel)
-
         this.bindEvents()
     }
 
     bindEvents() {
-        document.getElementById('toggle-planet-orbits').onchange = (e) => {
-            SimulationSettings.showPlanetOrbits = e.target.checked
-        }
-
-        document.getElementById('toggle-moon-orbits').onchange = (e) => {
-            SimulationSettings.showMoonOrbits = e.target.checked
-        }
-
-        document.getElementById('toggle-moons').onchange = (e) => {
-            SimulationSettings.showMoons = e.target.checked
-        }
-
-        document.getElementById('toggle-pause').onchange = (e) => {
-            SimulationSettings.pause = e.target.checked
-        }
-
-        document.getElementById('toggle-satellites').onchange = (e) => {
-            SimulationSettings.showSatellites = e.target.checked
-        }
+        this._bindToggle('track-planet-orbits', 'row-planet-orbits', true, (v) => {
+            SimulationSettings.showPlanetOrbits = v
+        })
+        this._bindToggle('track-moon-orbits', 'row-moon-orbits', true, (v) => {
+            SimulationSettings.showMoonOrbits = v
+        })
+        this._bindToggle('track-moons', 'row-moons', true, (v) => {
+            SimulationSettings.showMoons = v
+        })
+        this._bindToggle('track-satellites', 'row-satellites', true, (v) => {
+            SimulationSettings.showSatellites = v
+        })
+        this._bindToggle('track-pause', 'row-pause', false, (v) => {
+            SimulationSettings.pause = v
+        })
 
         const slider = document.getElementById('time-scale')
         const valueLabel = document.getElementById('time-scale-value')
@@ -1589,92 +3096,479 @@ export class ControlsPanel {
         slider.oninput = (e) => {
             const value = parseFloat(e.target.value)
             SimulationSettings.timeScale = value
-            valueLabel.innerText = value.toFixed(1) + 'x'
+            valueLabel.innerText = value.toFixed(1) + '×'
         }
+
+        const ambientSlider = document.getElementById('ambient-light')
+        const ambientLabel = document.getElementById('ambient-light-value')
+
+        ambientSlider.oninput = (e) => {
+            const value = parseFloat(e.target.value)
+            SimulationSettings.ambientIntensity = value
+            ambientLabel.innerText = value.toFixed(1)
+        }
+    }
+
+    _bindToggle(trackId, rowId, initialState, onChange) {
+        const track = document.getElementById(trackId)
+        const row = document.getElementById(rowId)
+        let state = initialState
+
+        row.addEventListener('click', () => {
+            state = !state
+            track.classList.toggle('on', state)
+            onChange(state)
+        })
+    }
+
+    setSatellites(satellites, onClick) {
+        const container = document.getElementById('satellite-list')
+        container.innerHTML = ''
+
+        satellites.forEach(sat => {
+            const btn = document.createElement('button')
+            btn.className = 'sp-sat-btn'
+            btn.innerText = sat.name
+
+            btn.onclick = () => {
+                console.log('Clicked satellite:', sat)
+                onClick(sat)
+            }
+
+            container.appendChild(btn)
+        })
     }
 }===== ui/planetInfo.js =====
 // src/ui/PlanetInfoUI.js
 
+const STYLES = `
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Exo+2:wght@300;400;500&display=swap');
+
+    .sp-info-panel {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        padding: 20px;
+        background: rgba(15, 12, 6, 0.88);
+        border: 1px solid rgba(200, 169, 110, 0.2);
+        border-radius: 14px;
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        color: #e8dcc8;
+        font-family: 'Exo 2', Arial, sans-serif;
+        display: none;
+        min-width: 230px;
+        max-width: 270px;
+        overflow: hidden;
+        z-index: 100;
+        animation: sp-fadein 0.25s ease;
+    }
+
+    @keyframes sp-fadein {
+        from { opacity: 0; transform: translateY(-8px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .sp-info-panel::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(200, 169, 110, 0.65), transparent);
+        pointer-events: none;
+    }
+
+    .sp-planet-name {
+        font-family: 'Orbitron', Arial, sans-serif;
+        font-size: 20px;
+        font-weight: 700;
+        color: #f5ede0;
+        letter-spacing: 2px;
+        margin: 0 0 4px;
+    }
+
+    .sp-planet-type {
+        font-size: 10px;
+        color: #c8a96e;
+        letter-spacing: 2.5px;
+        text-transform: uppercase;
+        margin-bottom: 12px;
+    }
+
+    .sp-info-divider {
+        height: 1px;
+        background: linear-gradient(90deg, rgba(200, 169, 110, 0.22), transparent);
+        margin: 10px 0 14px;
+    }
+
+    .sp-info-desc {
+        font-size: 12.5px;
+        color: #c8bca8;
+        line-height: 1.65;
+        margin: 0 0 14px;
+    }
+
+    .sp-stats-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+
+    .sp-stat-cell {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(200, 169, 110, 0.18);
+        border-radius: 8px;
+        padding: 8px 10px;
+    }
+
+    .sp-stat-label {
+        font-size: 9px;
+        color: #c8a96e;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        margin-bottom: 3px;
+    }
+
+    .sp-stat-value {
+        font-family: 'Orbitron', Arial, sans-serif;
+        font-size: 12px;
+        color: #f5ede0;
+    }
+
+    .sp-distance-row {
+        font-size: 11.5px;
+        color: #c8bca8;
+        padding: 8px 10px;
+        background: rgba(200, 169, 110, 0.07);
+        border: 1px solid rgba(200, 169, 110, 0.18);
+        border-radius: 8px;
+        margin-bottom: 14px;
+        line-height: 1.5;
+    }
+
+    .sp-distance-label {
+        font-family: 'Orbitron', Arial, sans-serif;
+        font-size: 9px;
+        letter-spacing: 1.5px;
+        color: #c8a96e;
+        display: block;
+        margin-bottom: 2px;
+        text-transform: uppercase;
+    }
+
+    .sp-btn-exit {
+        width: 100%;
+        padding: 9px;
+        background: transparent;
+        border: 1px solid rgba(200, 100, 80, 0.35);
+        border-radius: 8px;
+        color: rgba(220, 130, 110, 0.85);
+        font-family: 'Orbitron', Arial, sans-serif;
+        font-size: 9px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .sp-btn-exit:hover {
+        background: rgba(200, 100, 80, 0.12);
+        border-color: rgba(200, 100, 80, 0.65);
+        color: #e08070;
+    }
+`
+
 export class PlanetInfoUI {
     constructor() {
+        this.injectStyles()
         this.createPanel()
     }
-  
+
+    injectStyles() {
+        if (document.getElementById('sp-planet-info-styles')) return
+        const style = document.createElement('style')
+        style.id = 'sp-planet-info-styles'
+        style.textContent = STYLES
+        document.head.appendChild(style)
+    }
+
     createPanel() {
         this.panel = document.createElement('div')
-        
-        this.panel.style.position = 'absolute'
-        this.panel.style.top = '20px'
-        this.panel.style.right = '20px'
-        this.panel.style.padding = '15px'
-        this.panel.style.border = '1px solid rgba(255,255,255,0.1)'
-        this.panel.style.color = 'white'
-        this.panel.style.fontFamily = 'Arial'
-        this.panel.style.borderRadius = '10px'
-        this.panel.style.display = 'none'
-        this.panel.style.minWidth = '220px'
-        this.panel.style.maxWidth = '260px'
-    
+        this.panel.className = 'sp-info-panel'
         document.body.appendChild(this.panel)
     }
-  
+
     showPlanet(planet) {
         const info = planet.info || {}
-      
-        this.panel.style.display = 'block'
-      
-        this.panel.innerHTML = `
-            <div style="display:flex; flex-direction:column; gap:10px;">
-            
-            <h2 style="margin:0; font-size:22px;">
-              ${planet.name}
-            </h2>
-      
-            <div style="height:2px; background:rgba(255,255,255,0.2);"></div>
-      
-            <p style="margin:0; font-size:14px; opacity:0.8;">
-              ${info.description || 'No description available'}
-            </p>
-      
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; font-size:13px;">
-              <div><strong>Radius:</strong><br>${info.radius || '-'}</div>
-              <div><strong>Moons:</strong><br>${info.moons ?? '-'}</div>
-              <div><strong>Day:</strong><br>${info.day || '-'}</div>
-              <div><strong>Year:</strong><br>${info.year || '-'}</div>
-            </div>
-      
-            <div style="margin-top:10px; font-size:12px; opacity:0.6;">
-              Distance from sun: ${planet.mesh.position.x}
-            </div>
-      
-            <button id="exit-btn" style="
-              margin-top:10px;
-              padding:8px;
-              border:none;
-              border-radius:6px;
-              background:#ff4d4d;
-              color:white;
-              cursor:pointer;
-            ">
-              Exit
-            </button>
-      
-          </div>
-        `
-      
-        document.getElementById('exit-btn').onclick = (e) => {
-            e.stopPropagation() // Prevent click from propagating to scene
 
-            if (this.onExit) {
-                this.onExit()
-            }
+        this.panel.style.display = 'block'
+
+        this.panel.innerHTML = `
+            <h2 class="sp-planet-name">${planet.name}</h2>
+            <div class="sp-planet-type">${info.type || 'Planet'}</div>
+
+            <div class="sp-info-divider"></div>
+
+            <p class="sp-info-desc">
+                ${info.description || 'No description available.'}
+            </p>
+
+            <div class="sp-stats-grid">
+                <div class="sp-stat-cell">
+                    <div class="sp-stat-label">Radius</div>
+                    <div class="sp-stat-value">${info.radius || '—'}</div>
+                </div>
+                <div class="sp-stat-cell">
+                    <div class="sp-stat-label">Moons</div>
+                    <div class="sp-stat-value">${info.moons ?? '—'}</div>
+                </div>
+                <div class="sp-stat-cell">
+                    <div class="sp-stat-label">Day</div>
+                    <div class="sp-stat-value">${info.day || '—'}</div>
+                </div>
+                <div class="sp-stat-cell">
+                    <div class="sp-stat-label">Year</div>
+                    <div class="sp-stat-value">${info.year || '—'}</div>
+                </div>
+            </div>
+
+            <div class="sp-distance-row">
+                <span class="sp-distance-label">Distance from Sun</span>
+                ${info.sunDistance || '—'}
+            </div>
+
+            <button class="sp-btn-exit" id="exit-btn">✕ &nbsp;Close</button>
+        `
+
+        document.getElementById('exit-btn').onclick = (e) => {
+            e.stopPropagation()
+            if (this.onExit) this.onExit()
         }
     }
-  
+
     hide() {
         this.panel.style.display = 'none'
     }
-  }===== utils/constants.js =====
+}===== ui/satelliteInfo.js =====
+// src/ui/satelliteInfo.js
+
+const STYLES = `
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Exo+2:wght@300;400;500&display=swap');
+
+    .sp-sat-panel {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        padding: 20px;
+        background: rgba(15, 12, 6, 0.88);
+        border: 1px solid rgba(200, 169, 110, 0.2);
+        border-radius: 14px;
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        color: #e8dcc8;
+        font-family: 'Exo 2', Arial, sans-serif;
+        display: none;
+        min-width: 240px;
+        max-width: 280px;
+        overflow: hidden;
+        z-index: 100;
+        animation: sp-sat-fadein 0.25s ease;
+    }
+
+    @keyframes sp-sat-fadein {
+        from { opacity: 0; transform: translateY(-8px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .sp-sat-panel::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(200, 169, 110, 0.65), transparent);
+        pointer-events: none;
+    }
+
+    .sp-sat-eyebrow {
+        font-family: 'Orbitron', Arial, sans-serif;
+        font-size: 9px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: #f5ede0;
+        margin: 0 0 10px;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+    }
+
+    .sp-sat-eyebrow::before {
+        content: '';
+        width: 5px; height: 5px;
+        border-radius: 50%;
+        background: #c8a96e;
+        box-shadow: 0 0 7px rgba(200, 169, 110, 0.6);
+        flex-shrink: 0;
+    }
+
+    .sp-sat-name {
+        font-family: 'Orbitron', Arial, sans-serif;
+        font-size: 15px;
+        font-weight: 700;
+        color: #e8dcc8;
+        letter-spacing: 1px;
+        margin: 0 0 3px;
+        line-height: 1.3;
+    }
+
+    .sp-sat-subtitle {
+        font-size: 10px;
+        color: #c8a96e;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        margin-bottom: 12px;
+    }
+
+    .sp-sat-divider {
+        height: 1px;
+        background: linear-gradient(90deg, rgba(200, 169, 110, 0.2), transparent);
+        margin: 10px 0 14px;
+    }
+
+    .sp-sat-img {
+        width: 100%;
+        border-radius: 8px;
+        object-fit: cover;
+        max-height: 130px;
+        margin-bottom: 12px;
+        border: 1px solid rgba(200, 169, 110, 0.18);
+        display: block;
+    }
+
+    .sp-sat-desc {
+        font-size: 12.5px;
+        color: #f5ede0;
+        line-height: 1.65;
+        margin: 0 0 14px;
+    }
+
+    .sp-sat-details {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        margin-bottom: 14px;
+    }
+
+    .sp-sat-detail-row {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        font-size: 12px;
+        color: #f5ede0;
+        padding: 6px 0;
+        border-bottom: 1px solid rgba(200, 169, 110, 0.08);
+        transition: color 0.15s;
+    }
+
+    .sp-sat-detail-row:last-child { border-bottom: none; }
+
+    .sp-sat-detail-row::before {
+        content: '';
+        width: 4px; height: 4px;
+        border-radius: 50%;
+        background: #c8a96e;
+        opacity: 0.5;
+        flex-shrink: 0;
+    }
+
+    .sp-sat-btn-exit {
+        width: 100%;
+        padding: 9px;
+        background: transparent;
+        border: 1px solid rgba(200, 100, 80, 0.28);
+        border-radius: 8px;
+        color: rgba(200, 100, 80, 0.6);
+        font-family: 'Orbitron', Arial, sans-serif;
+        font-size: 9px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .sp-sat-btn-exit:hover {
+        background: rgba(200, 100, 80, 0.1);
+        border-color: rgba(200, 100, 80, 0.55);
+        color: #c86450;
+    }
+`
+
+export class SatelliteInfoUI {
+    constructor() {
+        this.injectStyles()
+        this.createPanel()
+    }
+
+    injectStyles() {
+        if (document.getElementById('sp-sat-info-styles')) return
+        const style = document.createElement('style')
+        style.id = 'sp-sat-info-styles'
+        style.textContent = STYLES
+        document.head.appendChild(style)
+    }
+
+    createPanel() {
+        this.panel = document.createElement('div')
+        this.panel.className = 'sp-sat-panel'
+        document.body.appendChild(this.panel)
+    }
+
+    showSatellite(sat) {
+        const info = sat.info || {}
+
+        this.panel.style.display = 'block'
+
+        this.panel.innerHTML = `
+            <div class="sp-sat-eyebrow">Satellite</div>
+
+            <h2 class="sp-sat-name">${info.title || sat.name}</h2>
+            <div class="sp-sat-subtitle">${info.subtitle || 'Artificial Satellite'}</div>
+
+            <div class="sp-sat-divider"></div>
+
+            ${info.image ? `
+                <img
+                    src="${info.image}"
+                    class="sp-sat-img"
+                    alt="${info.title || sat.name}"
+                />
+            ` : ''}
+
+            <p class="sp-sat-desc">
+                ${info.description || 'No description available.'}
+            </p>
+
+            ${info.details && info.details.length ? `
+                <div class="sp-sat-details">
+                    ${info.details.map(d => `
+                        <div class="sp-sat-detail-row">${d}</div>
+                    `).join('')}
+                </div>
+            ` : ''}
+
+            <button class="sp-sat-btn-exit" id="exit-sat-btn">✕ &nbsp;Close</button>
+        `
+
+        document.getElementById('exit-sat-btn').onclick = (e) => {
+            e.stopPropagation()
+            if (this.onExit) this.onExit()
+        }
+    }
+
+    hide() {
+        this.panel.style.display = 'none'
+    }
+}===== utils/constants.js =====
 ===== utils/helpers.js =====
 ===== utils/textureLoader.js =====
 // src/utils/textureLoader.js

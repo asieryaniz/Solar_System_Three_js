@@ -16,14 +16,6 @@ export function createScene() {
         '/textures/space/5.jpg',
         '/textures/space/6.jpg'
     ])
-    // const spaceTexture = loader.load([
-    //     '/textures/space/nx.png',
-    //     '/textures/space/ny.png',
-    //     '/textures/space/nz.png',
-    //     '/textures/space/px.png',
-    //     '/textures/space/py.png',
-    //     '/textures/space/pz.png'
-    // ])
 
     scene.background = spaceTexture
 
