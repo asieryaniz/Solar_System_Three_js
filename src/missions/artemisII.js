@@ -321,8 +321,19 @@ export class ArtemisII {
         scene.add(this.spacecraft)
         loadArtemisModel().then(model => {
             scene.remove(this.spacecraft)
+
+            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             this.spacecraft = model
             scene.add(this.spacecraft)
+            // this.spacecraft = new THREE.Group()
+            // this.model = model
+
+            // // Ajuste de orientación SOLO al modelo
+            // this.model.rotation.x = Math.PI / 2 // ejemplo
+
+            // this.spacecraft.add(this.model)
+            // scene.add(this.spacecraft)
+            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         })
 
         // Trajectory curves
@@ -477,6 +488,7 @@ export class ArtemisII {
 
         this.spacecraft.position.copy(pt)
         this.spacecraft.lookAt(ptNext)
+        this.spacecraft.rotateX(Math.PI / 2) // Adjust model orientation
 
         this.plume.update(pt)
         this.plume2.update(pt)
@@ -491,6 +503,7 @@ export class ArtemisII {
 
         this.spacecraft.position.copy(pt)
         this.spacecraft.lookAt(ptNext)
+        this.spacecraft.rotateX(Math.PI / 2) // Adjust model orientation
 
         const e = this._ease(Math.min(t * 2, 1))
         this._camPos.set(
@@ -507,6 +520,7 @@ export class ArtemisII {
 
         this.spacecraft.position.copy(pt)
         this.spacecraft.lookAt(ptNext)
+        this.spacecraft.rotateX(Math.PI / 2) // Adjust model orientation
 
         this.plume.update(pt)
         this.plume2.update(pt)
@@ -522,6 +536,7 @@ export class ArtemisII {
 
         this.spacecraft.position.copy(pt)
         this.spacecraft.lookAt(ptNext)
+        this.spacecraft.rotateX(Math.PI / 2) // Adjust model orientation
         this.spacecraft.rotateZ(0.002)
 
         this._camPos.set(-4, 3, 5.5)
@@ -534,6 +549,7 @@ export class ArtemisII {
 
         this.spacecraft.position.copy(pt)
         this.spacecraft.lookAt(ptNext)
+        this.spacecraft.rotateX(Math.PI / 2) // Adjust model orientation
 
         const moonPos = MOON_FIXED_POS
         const toMoon = moonPos.clone().sub(pt).normalize()
@@ -550,6 +566,7 @@ export class ArtemisII {
 
         this.spacecraft.position.copy(pt)
         this.spacecraft.lookAt(ptNext)
+        this.spacecraft.rotateX(Math.PI / 2) // Adjust model orientation
         this.spacecraft.rotateZ(0.002)
 
         this._camPos.set(4.5, 3.5, -3)
