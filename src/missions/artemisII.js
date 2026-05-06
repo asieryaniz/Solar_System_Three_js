@@ -5,6 +5,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js'
 import { SimulationSettings } from '../systems/simulationSettings.js'
 import { ArtemisHUD } from '../ui/artemisHUD.js'
+import { analytics } from '../analytics/analytics.js'
 
 const EARTH_R = 1
 const MOON_ORBIT_R = 3.5
@@ -39,7 +40,6 @@ const PHASE_CURVE = {
 }
 
 // Helpers
-
 function loadArtemisModel() {
     return new Promise((resolve) => {
         const loader = new GLTFLoader()
@@ -254,6 +254,10 @@ export class ArtemisII {
 
         this._savedBackground = null
         this._hiddenSceneObjects = []
+
+        // Analytics: track mission start timestamp and phase visits
+        this._missionStartTime = null
+        this._visitedPhases    = []
     }
 
 
@@ -262,6 +266,11 @@ export class ArtemisII {
         this.camera = camera
 
         SimulationSettings.missionMode = true
+
+        // Analytics
+        this._missionStartTime = Date.now()
+        this._visitedPhases    = []
+        analytics.trackMissionStart('Artemis II')
 
         // Ocult the control panel
         const panel = document.querySelector('.sp-panel')
@@ -321,19 +330,8 @@ export class ArtemisII {
         scene.add(this.spacecraft)
         loadArtemisModel().then(model => {
             scene.remove(this.spacecraft)
-
-            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             this.spacecraft = model
             scene.add(this.spacecraft)
-            // this.spacecraft = new THREE.Group()
-            // this.model = model
-
-            // // Ajuste de orientación SOLO al modelo
-            // this.model.rotation.x = Math.PI / 2 // ejemplo
-
-            // this.spacecraft.add(this.model)
-            // scene.add(this.spacecraft)
-            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         })
 
         // Trajectory curves
@@ -366,6 +364,12 @@ export class ArtemisII {
 
     end(scene) {
         SimulationSettings.missionMode = false
+
+        // Analytics: determine whether the mission ended naturally or was aborted
+        const completedNaturally = this._missionEnded
+        const reason = completedNaturally ? 'completed' : 'user_abort'
+
+        analytics.trackMissionStop('Artemis II', reason)
 
         const panel = document.querySelector('.sp-panel')
         if (panel) panel.style.display = ''
@@ -459,6 +463,13 @@ export class ArtemisII {
     // Phase transition
     _applyPhase() {
         const id = PHASES[this.phaseIndex].id
+
+        // Track each phase reached (only once per phase)
+        if (!this._visitedPhases.includes(id)) {
+            this._visitedPhases.push(id)
+            analytics.trackMissionStart(`Artemis II — phase: ${id}`)
+        }
+        
         const plumeOn = ['launch', 'tli', 'reentry'].includes(id)
         plumeOn ? this.plume.show()  : this.plume.hide()
         plumeOn ? this.plume2.show() : this.plume2.hide()

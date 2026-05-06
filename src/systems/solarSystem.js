@@ -1,4 +1,4 @@
-// src/systems/SolarSystem.js
+// src/systems/solarSystem.js
 
 import { Sun } from '../objects/sun.js'
 import { Planet } from '../objects/planet.js'
@@ -12,6 +12,7 @@ import { ArtificialSatellite } from '../objects/artificialSatellite.js'
 import { ARTIFICIAL_SATELLITES } from '../data/artificialSatellites.js'
 import { SimulationSettings } from '../systems/simulationSettings.js'
 import { SatelliteInfoUI } from '../ui/satelliteInfo.js'
+import { analytics } from '../analytics/analytics.js'
 
 export class SolarSystem {
     constructor(scene, camera) {
@@ -109,6 +110,9 @@ export class SolarSystem {
             this.satelliteUI.hide()
             this.ui.showPlanet(planet)
 
+            // Track planet click
+            analytics.trackPlanetClick(planet.name)
+
             if (this.cameraController) {
                 this.cameraController.focusOn(planet)
             }
@@ -120,6 +124,9 @@ export class SolarSystem {
                 this.interaction.ignoreNextClick = true
             }
 
+            // Track camera reset triggered from planet info panel
+            analytics.trackCameraReset()
+
             // Reset camera view
             if (this.cameraController) {
                 this.cameraController.resetView()
@@ -129,6 +136,8 @@ export class SolarSystem {
         }
 
         this.satelliteUI.onExit = () => {
+            // Track camera reset triggered from satellite info panel
+            analytics.trackCameraReset()
 
             if (this.cameraController) {
                 this.cameraController.resetView()
@@ -140,12 +149,14 @@ export class SolarSystem {
 
     // Called by controls panel when an artificial satellite is selected
     onSatelliteSelect(sat) {
-
         this.ui.hide()
         this.satelliteUI.showSatellite(sat)
+
+        // Track satellite click from the controls panel button
+        analytics.trackSatelliteClick(sat.name)
     
         if (this.cameraController) {
-            this.cameraController.focusOn({mesh: sat.container})
+            this.cameraController.focusOn({ mesh: sat.container })
         }
     }
 

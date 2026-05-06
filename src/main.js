@@ -16,6 +16,8 @@ import { SimulationSettings } from './systems/simulationSettings.js'
 import { MissionSystem } from './systems/missionSystem.js'
 import { ArtemisII } from './missions/artemisII.js'
 
+import { analytics } from './analytics/analytics.js'
+
 const scene = createScene()
 const camera = createCamera()
 const renderer = createRenderer()
@@ -67,11 +69,13 @@ document.getElementById('start-artemis').onclick = () => {
   cameraController.followTarget = null
   controls.enabled = false
   missionSystem.start(artemis)
+  analytics.trackMissionStart('Artemis II')
 }
 
 document.getElementById('stop-mission').onclick = () => {
   missionSystem.stop()
   cameraController.resetView()
+  analytics.trackMissionStop('Artemis II', 'user_abort')
 }
 
 window.addEventListener('artemis:stop', () => {
@@ -80,6 +84,8 @@ window.addEventListener('artemis:stop', () => {
   controls.target.set(0, 0, 0)
   controls.enabled = true
   cameraController.resetView()
+  analytics.trackCameraReset()
+  
 })
 
 // Start the app

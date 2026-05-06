@@ -1,6 +1,7 @@
 // src/ui/controlsPanel.js
 
 import { SimulationSettings } from '../systems/simulationSettings.js'
+import { analytics } from '../analytics/analytics.js'
 
 const STYLES = `
     @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Exo+2:wght@300;400;500&display=swap');
@@ -234,6 +235,56 @@ const STYLES = `
         border-color: rgba(200, 100, 80, 0.65);
         color: #e08070;
     }
+
+    /* Analytics download button !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
+    .sp-btn-analytics {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        width: 100%;
+        padding: 8px 14px;
+        background: transparent;
+        border: 1px solid rgba(200, 169, 110, 0.2);
+        border-radius: 8px;
+        color: rgba(200, 169, 110, 0.5);
+        font-family: 'Orbitron', Arial, sans-serif;
+        font-size: 9px;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-align: center;
+        margin-top: 8px;
+    }
+
+    .sp-btn-analytics:hover {
+        background: rgba(200, 169, 110, 0.08);
+        border-color: rgba(200, 169, 110, 0.45);
+        color: #c8a96e;
+    }
+
+    .sp-analytics-dot {
+        width: 5px; height: 5px;
+        border-radius: 50%;
+        background: currentColor;
+        animation: sp-blink 2s ease-in-out infinite;
+        flex-shrink: 0;
+    }
+
+    @keyframes sp-blink {
+        0%, 100% { opacity: 1; }
+        50%       { opacity: 0.3; }
+    }
+
+    .sp-analytics-count {
+        font-size: 8px;
+        color: rgba(200, 169, 110, 0.4);
+        text-align: center;
+        margin-top: 4px;
+        letter-spacing: 1px;
+        font-family: 'Orbitron', Arial, sans-serif;
+    }
 `
 
 export class ControlsPanel {
@@ -317,7 +368,7 @@ export class ControlsPanel {
             <div style="margin-top:14px;">
                 <div class="sp-slider-header">
                     <span>Ambient illumination</span>
-                    <span class="sp-slider-value" id="ambient-light-value">1.0×</span>
+                    <span class="sp-slider-value" id="ambient-light-value">3.0</span>
                 </div>
                 <input
                     class="sp-range"
@@ -341,29 +392,45 @@ export class ControlsPanel {
 
             <button class="sp-btn-launch" id="start-artemis">⬡ &nbsp;Launch Artemis II</button>
             <button class="sp-btn-abort" id="stop-mission">✕ &nbsp;Abort Mission</button>
+
+            <div class="sp-divider"></div>
+
+            <button class="sp-btn-analytics" id="download-analytics">
+                <span class="sp-analytics-dot"></span>
+                Export Session Data
+            </button>
+            <div class="sp-analytics-count" id="analytics-count">0 events recorded</div>
         `
 
         document.body.appendChild(this.panel)
         this.bindEvents()
+        this._startCountUpdater()
     }
 
     bindEvents() {
+        // Visibility toggles
         this._bindToggle('track-planet-orbits', 'row-planet-orbits', true, (v) => {
             SimulationSettings.showPlanetOrbits = v
+            analytics.trackToggle('planet_orbits', v)
         })
         this._bindToggle('track-moon-orbits', 'row-moon-orbits', true, (v) => {
             SimulationSettings.showMoonOrbits = v
+            analytics.trackToggle('moon_orbits', v)
         })
         this._bindToggle('track-moons', 'row-moons', true, (v) => {
             SimulationSettings.showMoons = v
+            analytics.trackToggle('moons', v)
         })
         this._bindToggle('track-satellites', 'row-satellites', true, (v) => {
             SimulationSettings.showSatellites = v
+            analytics.trackToggle('artificial_satellites', v)
         })
         this._bindToggle('track-pause', 'row-pause', false, (v) => {
             SimulationSettings.pause = v
+            analytics.trackToggle('pause', v)
         })
 
+        // Speed slider
         const slider = document.getElementById('time-scale')
         const valueLabel = document.getElementById('time-scale-value')
 
@@ -371,22 +438,30 @@ export class ControlsPanel {
             const value = parseFloat(e.target.value)
             SimulationSettings.timeScale = value
             valueLabel.innerText = value.toFixed(1) + '×'
+            analytics.trackSlider('simulation_speed', value.toFixed(1))
         }
 
+        // Ambient light slider
         const ambientSlider = document.getElementById('ambient-light')
-        const ambientLabel = document.getElementById('ambient-light-value')
+        const ambientLabel  = document.getElementById('ambient-light-value')
 
         ambientSlider.oninput = (e) => {
             const value = parseFloat(e.target.value)
             SimulationSettings.ambientIntensity = value
             ambientLabel.innerText = value.toFixed(1)
+            analytics.trackSlider('ambient_light', value.toFixed(1))
+        }
+
+        // Analytics download
+        document.getElementById('download-analytics').onclick = () => {
+            analytics.downloadCSV()
         }
     }
 
     _bindToggle(trackId, rowId, initialState, onChange) {
         const track = document.getElementById(trackId)
-        const row = document.getElementById(rowId)
-        let state = initialState
+        const row   = document.getElementById(rowId)
+        let state   = initialState
 
         row.addEventListener('click', () => {
             state = !state
@@ -406,10 +481,21 @@ export class ControlsPanel {
 
             btn.onclick = () => {
                 console.log('Clicked satellite:', sat)
+                analytics.trackSatelliteClick(sat.name)
                 onClick(sat)
             }
 
             container.appendChild(btn)
         })
+    }
+
+    // Update the event counter label every 3 s
+    _startCountUpdater() {
+        const label = document.getElementById('analytics-count')
+        if (!label) return
+        setInterval(() => {
+            const n = analytics.eventCount
+            label.textContent = `${n} event${n !== 1 ? 's' : ''} recorded`
+        }, 3000)
     }
 }
