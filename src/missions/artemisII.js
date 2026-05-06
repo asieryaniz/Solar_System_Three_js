@@ -118,7 +118,20 @@ function makePlume(scene, color = 0xff8c00, count = 200) {
             }
             geo.attributes.position.needsUpdate = true
         },
-        dispose() { scene.remove(points); geo.dispose(); mat.dispose() }
+        dispose() { scene.remove(points); geo.dispose(); mat.dispose() },
+        reset(origin) {
+            for (let i = 0; i < count; i++) {
+                positions[i * 3] = origin.x + (Math.random() - 0.5) * 0.015
+                positions[i * 3 + 1] = origin.y
+                positions[i * 3 + 2] = origin.z + (Math.random() - 0.5) * 0.015
+                velocities[i].set(
+                    (Math.random() - 0.5) * 0.003,
+                    -(Math.random() * 0.012 + 0.003),
+                    (Math.random() - 0.5) * 0.003
+                )
+            }
+            geo.attributes.position.needsUpdate = true
+        },
     }
 }
 
@@ -463,16 +476,19 @@ export class ArtemisII {
     // Phase transition
     _applyPhase() {
         const id = PHASES[this.phaseIndex].id
-
-        // Track each phase reached (only once per phase)
-        if (!this._visitedPhases.includes(id)) {
-            this._visitedPhases.push(id)
-            analytics.trackMissionStart(`Artemis II — phase: ${id}`)
-        }
-        
         const plumeOn = ['launch', 'tli', 'reentry'].includes(id)
-        plumeOn ? this.plume.show()  : this.plume.hide()
-        plumeOn ? this.plume2.show() : this.plume2.hide()
+    
+        if (plumeOn) {
+            // Resetear partículas a la posición actual del cohete antes de mostrar
+            const origin = this.spacecraft.position.clone()
+            this.plume.reset(origin)
+            this.plume2.reset(origin)
+            this.plume.show()
+            this.plume2.show()
+        } else {
+            this.plume.hide()
+            this.plume2.hide()
+        }
     }
 
     // Curve helpers
@@ -601,6 +617,8 @@ export class ArtemisII {
             }
         })
 
+        this.spacecraft.rotateX(-Math.PI / 2) // Adjust model orientation
+
         const away = pt.clone().normalize().negate().multiplyScalar(0.25).add(pt)
         away.y += 0.08
         this._camPos.copy(away)
@@ -620,6 +638,7 @@ export class ArtemisII {
         })
 
         this.spacecraft.position.y += Math.sin(this.totalFrame * 0.04) * 0.003
+        this.spacecraft.rotateX(-Math.PI / 2) // Adjust model orientation
 
         const angle = this.totalFrame * 0.005
         const base = pt.clone().normalize().multiplyScalar(EARTH_R + 0.015)
