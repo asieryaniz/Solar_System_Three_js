@@ -72,11 +72,6 @@ document.getElementById('start-artemis').onclick = () => {
   analytics.trackMissionStart('Artemis II')
 }
 
-document.getElementById('stop-mission').onclick = () => {
-  missionSystem.stop()
-  cameraController.resetView()
-  analytics.trackMissionStop('Artemis II', 'user_abort')
-}
 
 window.addEventListener('artemis:stop', () => {
   missionSystem.stop()

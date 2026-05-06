@@ -1,13 +1,503 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>myapp</title>
-  </head>
-  <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.js"></script>
-  </body>
+    <title>Solar System — Select Profile</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Exo+2:wght@300;400;500;600&display=swap" rel="stylesheet" />
+    <style>
+        /* Reset & base */
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --gold: #c8a96e;
+            --gold-bright: #e0c98a;
+            --gold-dim: rgba(200, 169, 110, 0.18);
+            --gold-glow: rgba(200, 169, 110, 0.55);
+            --bone: #f5ede0;
+            --text: #e8dcc8;
+            --text-muted: #c8bca8;
+            --text-dim: rgba(200, 188, 168, 0.55);
+            --bg: #050400;
+            --panel-bg: rgba(15, 12, 6, 0.82);
+            --border: rgba(200, 169, 110, 0.2);
+        }
+
+        html, body {
+            width: 100%; height: 100%;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Exo 2', sans-serif;
+            overflow: hidden;
+        }
+
+        /* Starfield canvas */
+        #stars {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+        }
+
+        /* Ambient radial glow */
+        .glow-center {
+            position: fixed;
+            inset: 0;
+            z-index: 1;
+            background:
+                radial-gradient(ellipse 60% 50% at 50% 55%,
+                    rgba(200, 169, 110, 0.07) 0%,
+                    transparent 70%),
+                radial-gradient(ellipse 40% 30% at 50% 50%,
+                    rgba(200, 120, 50, 0.04) 0%,
+                    transparent 60%);
+            pointer-events: none;
+        }
+
+        /* Corner brackets */
+        .corner {
+            position: fixed;
+            width: 40px; height: 40px;
+            border-color: rgba(200, 169, 110, 0.4);
+            border-style: solid; border-width: 0;
+            z-index: 10;
+        }
+        .corner.tl {top: 18px; left: 18px;  border-top-width: 2px; border-left-width: 2px; }
+        .corner.tr {top: 18px; right: 18px; border-top-width: 2px; border-right-width: 2px; }
+        .corner.bl {bottom: 18px; left: 18px;  border-bottom-width: 2px; border-left-width: 2px; }
+        .corner.br {bottom: 18px; right: 18px; border-bottom-width: 2px; border-right-width: 2px; }
+
+        /* Top bar */
+        .top-bar {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: 52px;
+            border-bottom: 1px solid rgba(200, 169, 110, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            background: linear-gradient(180deg, rgba(5,4,0,0.8) 0%, transparent 100%);
+        }
+
+        .top-bar-label {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 9px;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            color: rgba(200, 169, 110, 0.45);
+        }
+
+        /* Main layout */
+        .layout {
+            position: relative;
+            z-index: 5;
+            width: 100%; height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+            padding: 80px 24px 60px;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 52px;
+            animation: fadein 0.9s ease both;
+        }
+
+        .header-eyebrow {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 9px;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .header-eyebrow::before,
+        .header-eyebrow::after {
+            content: '';
+            width: 32px; height: 1px;
+            background: linear-gradient(90deg, transparent, var(--gold));
+        }
+        .header-eyebrow::after {
+            background: linear-gradient(90deg, var(--gold), transparent);
+        }
+
+        .header-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(28px, 4vw, 48px);
+            font-weight: 900;
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            color: var(--bone);
+            text-shadow:
+                0 0 40px rgba(200, 169, 110, 0.4),
+                0 0 80px rgba(200, 169, 110, 0.15);
+            line-height: 1.1;
+            margin-bottom: 14px;
+        }
+
+        .header-sub {
+            font-size: 13px;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            font-weight: 300;
+        }
+
+        /* Profile grid */
+        .profiles {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            width: 100%;
+            max-width: 900px;
+            animation: fadein 1.1s ease both;
+        }
+
+        /* Profile card */
+        .card {
+            position: relative;
+            background: var(--panel-bg);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 28px 20px 24px;
+            cursor: pointer;
+            overflow: hidden;
+            transition: border-color 0.3s, transform 0.25s, box-shadow 0.3s;
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            text-align: center;
+            animation: cardin 0.6s ease both;
+        }
+
+        .card:nth-child(1) { animation-delay: 0.15s; }
+        .card:nth-child(2) { animation-delay: 0.25s; }
+        .card:nth-child(3) { animation-delay: 0.35s; }
+        .card:nth-child(4) { animation-delay: 0.45s; }
+
+        /* Top shimmer line */
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(200, 169, 110, 0.5), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        /* Bottom fill on hover */
+        .card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse 80% 60% at 50% 120%, rgba(200, 169, 110, 0.08) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+
+        .card:hover {
+            border-color: rgba(200, 169, 110, 0.5);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5), 0 0 30px rgba(200, 169, 110, 0.08);
+        }
+
+        .card:hover::before,
+        .card:hover::after { opacity: 1; }
+
+        /* Admin card special style */
+        .card.admin {
+            border-color: rgba(200, 169, 110, 0.12);
+        }
+
+        .card.admin:hover {
+            border-color: rgba(200, 169, 110, 0.35);
+        }
+
+        /* Card icon */
+        .card-icon {
+            width: 52px; height: 52px;
+            border-radius: 50%;
+            border: 1px solid var(--border);
+            background: rgba(200, 169, 110, 0.06);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 18px;
+            font-size: 22px;
+            transition: border-color 0.3s, background 0.3s, box-shadow 0.3s;
+        }
+
+        .card:hover .card-icon {
+            border-color: rgba(200, 169, 110, 0.5);
+            background: rgba(200, 169, 110, 0.1);
+            box-shadow: 0 0 18px rgba(200, 169, 110, 0.15);
+        }
+
+        /* Card text */
+        .card-label {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 10px;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-bottom: 8px;
+        }
+
+        .card-name {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--bone);
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .card-desc {
+            font-size: 11.5px;
+            color: var(--text-dim);
+            line-height: 1.6;
+            font-weight: 300;
+        }
+
+        /* Admin card dim text */
+        .card.admin .card-label { color: rgba(200, 169, 110, 0.4); }
+        .card.admin .card-name  { color: rgba(245, 237, 224, 0.5); }
+        .card.admin .card-desc  { color: rgba(200, 188, 168, 0.3); }
+        .card.admin:hover .card-label { color: rgba(200, 169, 110, 0.7); }
+        .card.admin:hover .card-name  { color: rgba(245, 237, 224, 0.8); }
+        .card.admin:hover .card-desc  { color: rgba(200, 188, 168, 0.55); }
+
+        /* Enter arrow */
+        .card-enter {
+            margin-top: 18px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 8px;
+            letter-spacing: 2px;
+            color: rgba(200, 169, 110, 0.0);
+            text-transform: uppercase;
+            transition: color 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .card-enter::after {
+            content: '→';
+            font-size: 12px;
+        }
+
+        .card:hover .card-enter {
+            color: rgba(200, 169, 110, 0.7);
+        }
+
+        /* Bottom note */
+        .bottom-note {
+            margin-top: 36px;
+            font-size: 10px;
+            color: var(--text-dim);
+            letter-spacing: 1px;
+            text-align: center;
+            animation: fadein 1.5s ease both;
+        }
+
+        /* Animations */
+        @keyframes fadein {
+            from { opacity: 0; transform: translateY(12px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes cardin {
+            from { opacity: 0; transform: translateY(20px) scale(0.97); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* Click ripple */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(200, 169, 110, 0.25);
+            transform: scale(0);
+            animation: ripple-anim 0.5s ease-out forwards;
+            pointer-events: none;
+        }
+
+        @keyframes ripple-anim {
+            to { transform: scale(4); opacity: 0; }
+        }
+
+        /* Fade-out transition */
+        .fade-out {
+            animation: fadeout 0.5s ease forwards;
+        }
+
+        @keyframes fadeout {
+            to { opacity: 0; pointer-events: none; }
+        }
+
+        /* Responsive */
+        @media (max-width: 780px) {
+            .profiles {
+                grid-template-columns: repeat(2, 1fr);
+                max-width: 480px;
+            }
+        }
+
+        @media (max-width: 420px) {
+            .profiles {
+                grid-template-columns: 1fr;
+                max-width: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Starfield -->
+    <canvas id="stars"></canvas>
+
+    <!-- Ambient glow -->
+    <div class="glow-center"></div>
+
+    <!-- Corner brackets -->
+    <div class="corner tl"></div>
+    <div class="corner tr"></div>
+    <div class="corner bl"></div>
+    <div class="corner br"></div>
+
+    <!-- Top bar -->
+    <div class="top-bar">
+        <span class="top-bar-label">Solar System Simulator — Access Portal</span>
+    </div>
+
+    <!-- Main -->
+    <main class="layout" id="layout">
+
+        <div class="header">
+            <div class="header-eyebrow">Select your profile</div>
+            <h1 class="header-title">Solar System</h1>
+            <p class="header-sub">Choose how you wish to explore the cosmos</p>
+        </div>
+
+        <div class="profiles">
+
+            <div class="card" data-role="student" data-dest="simulator.html">
+                <div class="card-icon">🎓</div>
+                <div class="card-label">Profile</div>
+                <div class="card-name">Student</div>
+                <p class="card-desc">Discover planets, moons and satellites through an interactive guided experience.</p>
+                <div class="card-enter">Enter</div>
+            </div>
+
+            <div class="card" data-role="researcher" data-dest="simulator.html">
+                <div class="card-icon">🔭</div>
+                <div class="card-label">Profile</div>
+                <div class="card-name">Researcher</div>
+                <p class="card-desc">Access detailed orbital data, mission simulations and technical parameters.</p>
+                <div class="card-enter">Enter</div>
+            </div>
+
+            <div class="card" data-role="enthusiast" data-dest="simulator.html">
+                <div class="card-icon">🪐</div>
+                <div class="card-label">Profile</div>
+                <div class="card-name">Enthusiast</div>
+                <p class="card-desc">Explore the solar system at your own pace and satisfy your cosmic curiosity.</p>
+                <div class="card-enter">Enter</div>
+            </div>
+
+            <div class="card admin" data-role="admin" data-dest="admin.html">
+                <div class="card-icon">⚙️</div>
+                <div class="card-label">Profile</div>
+                <div class="card-name">Administrator</div>
+                <p class="card-desc">Access session analytics, usage data and the backend dashboard.</p>
+                <div class="card-enter">Enter</div>
+            </div>
+
+        </div>
+
+        <p class="bottom-note">Your profile will be recorded for analytics purposes</p>
+
+    </main>
+
+    <script>
+        // Starfield
+        const canvas = document.getElementById('stars')
+        const ctx    = canvas.getContext('2d')
+
+        let W, H, stars = []
+
+        function initStars() {
+            W = canvas.width  = window.innerWidth
+            H = canvas.height = window.innerHeight
+            stars = Array.from({ length: 260 }, () => ({
+                x: Math.random() * W,
+                y: Math.random() * H,
+                r: Math.random() * 1.1 + 0.2,
+                a: Math.random(),
+                da: (Math.random() - 0.5) * 0.003,
+                speed: Math.random() * 0.015
+            }))
+        }
+
+        function drawStars() {
+            ctx.clearRect(0, 0, W, H)
+            stars.forEach(s => {
+                s.a = Math.max(0.05, Math.min(1, s.a + s.da))
+                if (s.a <= 0.05 || s.a >= 1) s.da *= -1
+                s.y -= s.speed
+                if (s.y < 0) { s.y = H; s.x = Math.random() * W }
+
+                ctx.beginPath()
+                ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2)
+                ctx.fillStyle = `rgba(245, 237, 224, ${s.a})`
+                ctx.fill()
+            })
+            requestAnimationFrame(drawStars)
+        }
+
+        window.addEventListener('resize', initStars)
+        initStars()
+        drawStars()
+
+        // Card interaction
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('click', function(e) {
+                const role = this.dataset.role
+                const dest = this.dataset.dest
+
+                // Ripple effect
+                const rect   = this.getBoundingClientRect()
+                const ripple = document.createElement('span')
+                const size   = Math.max(rect.width, rect.height)
+                ripple.className = 'ripple'
+                ripple.style.cssText = `
+                    width:${size}px; height:${size}px;
+                    left:${e.clientX - rect.left - size/2}px;
+                    top:${e.clientY - rect.top - size/2}px;
+                `
+                this.appendChild(ripple)
+                setTimeout(() => ripple.remove(), 500)
+
+                // Save role to sessionStorage
+                sessionStorage.setItem('userRole', role)
+
+                // Fade out and navigate
+                setTimeout(() => {
+                    document.getElementById('layout').classList.add('fade-out')
+                    setTimeout(() => { window.location.href = dest }, 480)
+                }, 180)
+            })
+        })
+    </script>
+
+</body>
 </html>
