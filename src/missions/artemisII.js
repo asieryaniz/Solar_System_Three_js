@@ -43,7 +43,7 @@ const PHASE_CURVE = {
 function loadArtemisModel() {
     return new Promise((resolve) => {
         const loader = new GLTFLoader()
-        const draco  = new DRACOLoader()
+        const draco = new DRACOLoader()
         draco.setDecoderPath('/draco/')
         loader.setDRACOLoader(draco)
 
@@ -61,7 +61,7 @@ function loadArtemisModel() {
             },
             undefined,
             () => {
-                console.warn('[ArtemisII] artemis.glb no encontrado — usando placeholder')
+                console.warn('[ArtemisII] artemis.glb no encontrado - usando placeholder')
                 const g = new THREE.Group()
                 g.add(new THREE.Mesh(
                     new THREE.CylinderGeometry(0.03, 0.035, 0.18, 16),
@@ -140,7 +140,6 @@ function buildFullTrajectory(scene) {
     const MX = MOON_ORBIT_R
 
     // Curve A: launch → LEO → TLI
-
     // The orbit LEO is approximated with 8 points on the circumference of radius LEO_R.
     const ptA = (angle) => new THREE.Vector3(
         Math.sin(angle) * LEO_R,
@@ -152,7 +151,7 @@ function buildFullTrajectory(scene) {
         new THREE.Vector3(0, EARTH_R, 0),
         new THREE.Vector3(0, EARTH_R + 0.15, 0),
         new THREE.Vector3(0, EARTH_R + 0.35, 0),
-        new THREE.Vector3(0, LEO_R, 0),   // LEO north — angle 0°
+        new THREE.Vector3(0, LEO_R, 0), // LEO north — angle 0°
 
         // Parking orbit: travels through the hole LEO at constant radius, changing angle from 0 to 360°
         ptA(Math.PI * 0.25), // 45°
@@ -270,7 +269,7 @@ export class ArtemisII {
 
         // Analytics: track mission start timestamp and phase visits
         this._missionStartTime = null
-        this._visitedPhases    = []
+        this._visitedPhases = []
     }
 
 
@@ -282,7 +281,7 @@ export class ArtemisII {
 
         // Analytics
         this._missionStartTime = Date.now()
-        this._visitedPhases    = []
+        this._visitedPhases = []
         analytics.trackMissionStart('Artemis II')
 
         // Ocult the control panel
@@ -432,7 +431,7 @@ export class ArtemisII {
         this.phaseFrame++
 
         const phase = PHASES[this.phaseIndex]
-        const t     = Math.min(this.phaseFrame / phase.duration, 1)
+        const t = Math.min(this.phaseFrame / phase.duration, 1)
 
         // Advance phase if time is up
         if (this.phaseFrame >= phase.duration) {

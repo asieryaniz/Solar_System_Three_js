@@ -1,19 +1,4 @@
 // src/analytics/analytics.js
-//
-// Every session is stored as one record in localStorage under the key "solar_db_sessions".  The record contains:
-//
-//   sessionId        – unique identifier  (sess_XXXXXXXX)
-//   role             – user role from sessionStorage ('student' | 'researcher'
-//                      | 'enthusiast' | 'admin' | 'unknown')
-//   startISO         – ISO timestamp of session start
-//   endISO           – ISO timestamp of session end (filled on beforeunload)
-//   durationSec      – total session length in seconds
-//   userAgent        – browser user-agent string
-//   language         – navigator.language
-//   screenW/H        – screen resolution
-//   events           – array of individual interaction events (see _record)
-//   summary          – aggregated counters (filled on session end)
-//
 
 const DB_KEY = 'solar_db_sessions' // localStorage key that holds ALL sessions
 const MAX_SESSIONS = 500 // cap to avoid hitting storage limits
@@ -124,10 +109,6 @@ export class Analytics {
     }
 
     // Exports ALL historical sessions as a flat CSV. Each row = one event, enriched with session-level fields.
-    // Columns:
-    //      session_id, role, session_start_iso, screen, language, timezone,
-    //      timestamp_iso, elapsed_sec, category, action,
-    //      detail_key_1, detail_value_1, detail_key_2, detail_value_2
     static downloadAllSessionsCSV() {
         const sessions = Analytics.getAllSessions()
         if (!sessions.length) {
